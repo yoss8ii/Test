@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Administration — Simulateur de Salaire Concentrix</title>
+<style>
+/* ============================================================================
+   ADMIN — CONCENTRIX SALARY SIMULATOR
+   Même système de design que le simulateur principal (thème sombre, violet).
+   ============================================================================ */
+
+:root {
+    --bg: #111420;
+    --card: #171b29;
+    --card-2: #1d2233;
+    --violet: #5b4fe0;
+    --violet-2: #8b7cf6;
+    --border: #262b3d;
+    --border-strong: #333a52;
+    --text: #f5f6fa;
+    --text-soft: #b8bcd0;
+    --text-faint: #7d8299;
+    --gain: #34d399;
+    --deduct: #f472b6;
+    --danger: #f87171;
+    --r-lg: 20px;
+    --r-md: 14px;
+    --r-sm: 10px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+button { font-family: inherit; cursor: pointer; }
+input, select { font-family: inherit; }
+
+/* ===== Glassmorphism card base ===== */
+.glass {
+    background: rgba(29, 34, 51, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--r-lg);
+    box-shadow: 0 20px 50px -20px rgba(0,0,0,0.6);
+}
+
+/* ============================================================================
+   1. ÉCRAN DE CONNEXION
+   ============================================================================ */
+#loginScreen {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background:
+        radial-gradient(circle at 20% 10%, rgba(91,79,224,0.25), transparent 45%),
+        radial-gradient(circle at 80% 90%, rgba(139,124,246,0.18), transparent 45%),
+        var(--bg);
+    z-index: 500;
+    animation: fadeIn 0.4s ease;
+}
+
+#loginScreen.hidden { display: none; }
+
+.login-card {
+    width: 100%;
+    max-width: 380px;
+    padding: 36px 30px;
+    text-align: center;
+    animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.login-icon {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 18px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, var(--violet), var(--violet-2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 30px -8px rgba(91,79,224,0.6);
+}
+
+.login-icon svg { width: 26px; height: 26px; color: #fff; }
+
+.login-card h1 {
+    font-size: 22px;
+    margin: 0 0 4px;
+    font-weight: 700;
+}
+
+.login-card p {
+    font-size: 13px;
+    color: var(--text-faint);
+    margin: 0 0 26px;
+}
+
+.login-field {
+    text-align: left;
+    margin-bottom: 18px;
+}
+
+.login-field label {
+    display: block;
+    font-size: 12px;
+    color: var(--text-soft);
+    margin-bottom: 7px;
+}
+
+.login-field input {
+    width: 100%;
+    padding: 13px 14px;
+    background: var(--card-2);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--r-sm);
+    color: var(--text);
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.login-field input:focus {
+    border-color: var(--violet-2);
+    box-shadow: 0 0 0 3px rgba(139,124,246,0.15);
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: var(--r-sm);
+    background: linear-gradient(135deg, var(--violet), var(--violet-2));
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 10px 24px -8px rgba(91,79,224,0.7); }
+.btn-primary:active { transform: translateY(0); }
+
+.login-error {
+    margin-top: 14px;
+    font-size: 12.5px;
+    color: var(--danger);
+    min-height: 16px;
+}
+
+.login-hint {
+    margin-top: 20px;
+    font-size: 11px;
+    color: var(--text-faint);
+    line-height: 1.6;
+}
+
+/* Ripple effect (login + generic buttons) */
+.ripple { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.35); transform: scale(0); animation: ripple 0.6s ease-out; pointer-events: none; }
+@keyframes ripple { to { transform: scale(3); opacity: 0; } }
+
+/* ============================================================================
+   2. STRUCTURE DE L'APPLICATION (sidebar + contenu)
+   ============================================================================ */
+#appShell {
+    display: none;
+    min-height: 100vh;
+}
+
+#appShell.visible { display: flex; }
+
+/* ----- Sidebar ----- */
+.sidebar {
+    width: 250px;
+    flex: none;
+    background: rgba(23, 27, 41, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-right: 1px solid var(--border);
+    padding: 20px 14px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    z-index: 60;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 10px 22px;
+}
+
+.sidebar-brand .dot {
+    width: 30px; height: 30px;
+    border-radius: 9px;
+    background: linear-gradient(135deg, var(--violet), var(--violet-2));
+    flex: none;
+}
+
+.sidebar-brand strong { font-size: 14.5px; }
+.sidebar-brand span { display: block; font-size: 10.5px; color: var(--text-faint); }
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    width: 100%;
+    padding: 11px 12px;
+    border: none;
+    background: transparent;
+    color: var(--text-soft);
+    border-radius: var(--r-sm);
+    font-size: 13.5px;
+    text-align: left;
+    margin-bottom: 3px;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.nav-item .icon { font-size: 16px; flex: none; width: 20px; text-align: center; }
+
+.nav-item:hover { background: var(--card-2); color: #fff; }
+
+.nav-item.active {
+    background: linear-gradient(135deg, rgba(91,79,224,0.35), rgba(139,124,246,0.2));
+    color: #fff;
+    font-weight: 600;
+}
+
+.nav-divider { height: 1px; background: var(--border); margin: 12px 4px; }
+
+.nav-logout {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    width: 100%;
+    padding: 11px 12px;
+    border: 1px solid var(--border-strong);
+    background: var(--card-2);
+    color: var(--danger);
+    border-radius: var(--r-sm);
+    font-size: 13px;
+    margin-top: 10px;
+}
+
+.nav-logout:hover { background: rgba(248,113,113,0.12); border-color: var(--danger); }
+
+/* ----- Mobile sidebar toggle ----- */
+#sidebarBackdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 55;
+}
+
+.hamburger {
+    display: none;
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    background: var(--card-2);
+    border: 1px solid var(--border-strong);
+    color: var(--text);
+    align-items: center;
+    justify-content: center;
+    flex: none;
+}
+
+/* ----- Main content ----- */
+.main {
+    flex: 1;
+    min-width: 0;
+    padding: 26px 30px 80px;
+}
+
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+.topbar-title h2 { margin: 0; font-size: 22px; }
+.topbar-title p { margin: 3px 0 0; font-size: 12.5px; color: var(--text-faint); }
+
+.section { display: none; animation: fadeIn 0.35s ease; }
+.section.active { display: block; }
+
+/* ----- Dashboard cards ----- */
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.stat-card {
+    padding: 18px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover { transform: translateY(-3px); box-shadow: 0 24px 50px -18px rgba(0,0,0,0.7); }
+
+.stat-card .label { font-size: 12px; color: var(--text-faint); margin-bottom: 8px; }
+.stat-card .value { font-size: 24px; font-weight: 700; }
+.stat-card .value.ok { color: var(--gain); }
+.stat-card .value.error { color: var(--danger); }
+
+/* ----- Form fields (generic, generated by JS) ----- */
+.field-card { padding: 22px; margin-bottom: 18px; }
+.field-card h3 { margin: 0 0 4px; font-size: 15px; }
+.field-card .sub { font-size: 12px; color: var(--text-faint); margin: 0 0 18px; }
+
+.field-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+.field-item label {
+    display: block;
+    font-size: 12.5px;
+    color: var(--text-soft);
+    margin-bottom: 7px;
+}
+
+.field-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.field-control input[type="number"],
+.field-control input[type="text"],
+.field-control input[type="password"] {
+    flex: 1;
+    min-width: 0;
+    padding: 11px 12px;
+    background: var(--card-2);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--r-sm);
+    color: var(--text);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.field-control input:focus {
+    border-color: var(--violet-2);
+    box-shadow: 0 0 0 3px rgba(139,124,246,0.15);
+}
+
+.field-control input.invalid { border-color: var(--danger); box-shadow: 0 0 0 3px rgba(248,113,113,0.15); }
+
+.field-control input[type="color"] {
+    width: 44px; height: 40px; padding: 2px;
+    background: var(--card-2);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--r-sm);
+}
+
+.field-unit {
+    flex: none;
+    font-size: 12px;
+    color: var(--text-faint);
+    padding: 6px 10px;
+    background: var(--card-2);
+    border: 1px dashed var(--border-strong);
+    border-radius: 8px;
+}
+
+.field-error { font-size: 11px; color: var(--danger); margin-top: 6px; min-height: 14px; }
+
+/* Switch (réutilisé du simulateur) */
+.switch { position: relative; display: inline-block; width: 42px; height: 24px; flex: none; cursor: pointer; }
+.switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+.switch-track { position: absolute; inset: 0; background: var(--card-2); border: 1px solid var(--border-strong); border-radius: 999px; transition: background 0.15s ease, border-color 0.15s ease; }
+.switch-thumb { position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: var(--text-soft); border-radius: 50%; transition: transform 0.15s ease, background 0.15s ease; }
+.switch input:checked + .switch-track { background: var(--violet); border-color: var(--violet); }
+.switch input:checked + .switch-track .switch-thumb { transform: translateX(18px); background: #fff; }
+
+/* ----- Section action buttons ----- */
+.action-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+
+.btn {
+    padding: 10px 18px;
+    border-radius: var(--r-sm);
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid var(--border-strong);
+    background: var(--card-2);
+    color: var(--text);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+.btn:hover { transform: translateY(-1px); background: #242a3d; }
+.btn:active { transform: translateY(0); }
+
+.btn.violet { background: linear-gradient(135deg, var(--violet), var(--violet-2)); border-color: transparent; color: #fff; }
+.btn.violet:hover { box-shadow: 0 10px 24px -8px rgba(91,79,224,0.6); }
+.btn.danger { color: var(--danger); border-color: rgba(248,113,113,0.4); }
+.btn.danger:hover { background: rgba(248,113,113,0.1); }
+.btn.sm { padding: 7px 12px; font-size: 12px; }
+
+/* ----- IRPP table ----- */
+.irpp-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+.irpp-table th {
+    text-align: left; font-size: 11px; text-transform: none;
+    color: var(--text-faint); padding: 8px 10px; border-bottom: 1px solid var(--border);
+}
+.irpp-table td { padding: 6px 8px; }
+.irpp-table input {
+    width: 100%; padding: 9px 10px; background: var(--card-2);
+    border: 1px solid var(--border-strong); border-radius: 8px; color: var(--text); font-size: 13px; outline: none;
+}
+.irpp-table input:focus { border-color: var(--violet-2); }
+.irpp-row-del {
+    width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border-strong);
+    background: var(--card-2); color: var(--danger); font-size: 15px; line-height: 1;
+}
+.irpp-row-del:hover { background: rgba(248,113,113,0.12); }
+
+/* ----- Import/Export dropzone ----- */
+.dropzone {
+    border: 1.5px dashed var(--border-strong);
+    border-radius: var(--r-md);
+    padding: 34px 20px;
+    text-align: center;
+    color: var(--text-faint);
+    font-size: 13px;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+.dropzone.drag { border-color: var(--violet-2); background: rgba(139,124,246,0.06); }
+
+/* ============================================================================
+   3. TOASTS
+   ============================================================================ */
+#toastStack {
+    position: fixed;
+    top: 18px; right: 18px;
+    z-index: 800;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 320px;
+}
+
+.toast {
+    padding: 13px 16px;
+    border-radius: var(--r-sm);
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.toast.success { border-color: rgba(52,211,153,0.4); }
+.toast.error { border-color: rgba(248,113,113,0.4); }
+.toast .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.toast.success .dot { background: var(--gain); }
+.toast.error .dot { background: var(--danger); }
+.toast.leaving { animation: slideOutRight 0.25s ease forwards; }
+
+/* ============================================================================
+   4. ANIMATIONS
+   ============================================================================ */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideInRight { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes slideOutRight { to { opacity: 0; transform: translateX(24px); } }
+
+/* ============================================================================
+   5. RESPONSIVE
+   ============================================================================ */
+@media (max-width: 900px) {
+    .sidebar {
+        position: fixed;
+        left: 0; top: 0;
+        transform: translateX(-100%);
+        box-shadow: 0 0 60px rgba(0,0,0,0.5);
+    }
+    .sidebar.open { transform: translateX(0); }
+    #sidebarBackdrop.visible { display: block; }
+    .hamburger { display: flex; }
+    .main { padding: 20px 16px 70px; }
+}
+
+@media (min-width: 901px) and (max-width: 1200px) {
+    .field-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================================
+     ÉCRAN DE CONNEXION
+     ============================================================================ -->
+<div id="loginScreen">
+    <div class="login-card glass">
+        <div class="login-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        </div>
+        <h1>Administration</h1>
+        <p>Configuration du simulateur de salaire</p>
+
+        <form id="loginForm">
+            <div class="login-field">
+                <label for="loginPassword">Mot de passe Administrateur</label>
+                <input type="password" id="loginPassword" autocomplete="current-password" placeholder="••••••••">
+            </div>
+            <button type="submit" class="btn-primary">Connexion</button>
+            <div class="login-error" id="loginError"></div>
+        </form>
+
+        <div class="login-hint">Premier accès ? Mot de passe par défaut : <strong>admin123</strong><br>(modifiable ensuite dans Sécurité)</div>
+    </div>
+</div>
+
+<!-- ============================================================================
+     APPLICATION
+     ============================================================================ -->
+<div id="appShell">
+
+    <div id="sidebarBackdrop"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <div class="dot"></div>
+            <div>
+                <strong>Concentrix</strong>
+                <span>Panneau Admin</span>
+            </div>
+        </div>
+
+        <nav id="navList">
+            <button class="nav-item" data-section="dashboard"><span class="icon">🏠</span>Tableau de bord</button>
+            <button class="nav-item" data-section="salaires"><span class="icon">💰</span>Salaires</button>
+            <button class="nav-item" data-section="primes"><span class="icon">📈</span>Primes</button>
+            <button class="nav-item" data-section="heures"><span class="icon">🕒</span>Heures</button>
+            <button class="nav-item" data-section="cotisations"><span class="icon">🏦</span>Cotisations</button>
+            <button class="nav-item" data-section="impots"><span class="icon">📄</span>Impôts</button>
+            <button class="nav-item" data-section="tickets"><span class="icon">🎫</span>Tickets Restaurant</button>
+            <button class="nav-item" data-section="parametres"><span class="icon">⚙</span>Paramètres</button>
+            <button class="nav-item" data-section="securite"><span class="icon">🔒</span>Sécurité</button>
+            <div class="nav-divider"></div>
+            <button class="nav-item" data-section="sauvegarde"><span class="icon">💾</span>Sauvegarde</button>
+            <button class="nav-item" data-section="export"><span class="icon">📤</span>Export</button>
+            <button class="nav-item" data-section="import"><span class="icon">📥</span>Import</button>
+        </nav>
+
+        <button class="nav-logout" id="btnLogout"><span class="icon">⏻</span>Déconnexion</button>
+    </aside>
+
+    <main class="main">
+        <div class="topbar">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <button class="hamburger" id="btnHamburger">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+                </button>
+                <div class="topbar-title">
+                    <h2 id="topbarTitle">Tableau de bord</h2>
+                    <p id="topbarSub">Vue d'ensemble de la configuration</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== DASHBOARD ===== -->
+        <section class="section active" id="sec-dashboard">
+            <div class="stat-grid">
+                <div class="glass stat-card">
+                    <div class="label">Nombre total de paramètres</div>
+                    <div class="value" id="statParamCount">0</div>
+                </div>
+                <div class="glass stat-card">
+                    <div class="label">Dernière modification</div>
+                    <div class="value" id="statLastModified" style="font-size:15px;">—</div>
+                </div>
+                <div class="glass stat-card">
+                    <div class="label">Version</div>
+                    <div class="value" id="statVersion" style="font-size:18px;">—</div>
+                </div>
+                <div class="glass stat-card">
+                    <div class="label">État</div>
+                    <div class="value" id="statEtat">—</div>
+                </div>
+                <div class="glass stat-card">
+                    <div class="label">Dernière sauvegarde</div>
+                    <div class="value" id="statLastSave" style="font-size:15px;">—</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== SALAIRES ===== -->
+        <section class="section" id="sec-salaires">
+            <div class="glass field-card">
+                <h3>Salaires</h3>
+                <p class="sub">Salaire de base et indemnités fixes.</p>
+                <div class="field-grid" id="grid-salaires"></div>
+                <div class="action-row">
+                    <button class="btn violet" data-save="salaires">Sauvegarder</button>
+                    <button class="btn" data-cancel="salaires">Annuler</button>
+                    <button class="btn danger" data-reset="salaires">Réinitialiser</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== PRIMES ===== -->
+        <section class="section" id="sec-primes">
+            <div class="glass field-card">
+                <h3>Primes</h3>
+                <p class="sub">Primes variables et exceptionnelles.</p>
+                <div class="field-grid" id="grid-primes"></div>
+                <div class="action-row">
+                    <button class="btn violet" data-save="primes">Sauvegarder</button>
+                    <button class="btn" data-cancel="primes">Annuler</button>
+                    <button class="btn danger" data-reset="primes">Réinitialiser</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== HEURES ===== -->
+        <section class="section" id="sec-heures">
+            <div class="glass field-card">
+                <h3>Heures</h3>
+                <p class="sub">Taux horaires et majorations.</p>
+                <div class="field-grid" id="grid-heures"></div>
+                <div class="action-row">
+                    <button class="btn violet" data-save="heures">Sauvegarder</button>
+                    <button class="btn" data-cancel="heures">Annuler</button>
+                    <button class="btn danger" data-reset="heures">Réinitialiser</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== COTISATIONS ===== -->
+        <section class="section" id="sec-cotisations">
+            <div class="glass field-card">
+                <h3>Cotisations</h3>
+                <p class="sub">Assurance Groupe, CNSS et CSS.</p>
+                <div class="field-grid" id="grid-cotisations"></div>
+                <div class="action-row">
+                    <button class="btn violet" data-save="cotisations">Sauvegarder</button>
+                    <button class="btn" data-cancel="cotisations">Annuler</button>
+                    <button class="btn danger" data-reset="cotisations">Réinitialiser</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== IMPÔTS ===== -->
+        <section class="section" id="sec-impots">
+            <div class="glass field-card">
+                <h3>Barème IRPP</h3>
+                <p class="sub">Tranches d'imposition annuelles progressives.</p>
+                <table class="irpp-table">
+                    <thead><tr><th>Minimum (DT/an)</th><th>Maximum (DT/an)</th><th>Pourcentage</th><th></th></tr></thead>
+                    <tbody id="irppTbody"></tbody>
+                </table>
+                <button class="btn sm" id="btnAddTranche">+ Ajouter une tranche</button>
+            </div>
+
+            <div class="glass field-card">
+                <h3>Déductions familiales</h3>
+                <p class="sub">Abattements appliqués au revenu imposable annuel.</p>
+                <div class="field-grid" id="grid-famille"></div>
+            </div>
+
+            <div class="action-row">
+                <button class="btn violet" data-save="impots">Sauvegarder</button>
+                <button class="btn" data-cancel="impots">Annuler</button>
+                <button class="btn danger" data-reset="impots">Réinitialiser</button>
+            </div>
+        </section>
+
+        <!-- ===== TICKETS RESTAURANT ===== -->
+        <section class="section" id="sec-tickets">
+            <div class="glass field-card">
+                <h3>Tickets Restaurant</h3>
+                <p class="sub">Avantage en nature TR.</p>
+                <div class="field-grid" id="grid-tickets"></div>
+                <div class="action-row">
+                    <button class="btn violet" data-save="tickets">Sauvegarder</button>
+                    <button class="btn" data-cancel="tickets">Annuler</button>
+                    <button class="btn danger" data-reset="tickets">Réinitialiser</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== PARAMÈTRES ===== -->
+        <section class="section" id="sec-parametres">
+            <div class="glass field-card">
+                <h3>Paramètres généraux</h3>
+                <p class="sub">Identité et affichage du simulateur.</p>
+                <div class="field-grid" id="grid-parametres"></div>
+                <div class="action-row">
+                    <button class="btn violet" data-save="parametres">Sauvegarder</button>
+                    <button class="btn" data-cancel="parametres">Annuler</button>
+                    <button class="btn danger" data-reset="parametres">Réinitialiser</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== SÉCURITÉ ===== -->
+        <section class="section" id="sec-securite">
+            <div class="glass field-card">
+                <h3>Sécurité</h3>
+                <p class="sub">Accès au panneau d'administration.</p>
+                <div class="field-grid" id="grid-securite"></div>
+                <div class="action-row">
+                    <button class="btn violet" data-save="securite">Sauvegarder</button>
+                    <button class="btn" data-cancel="securite">Annuler</button>
+                    <button class="btn danger" data-reset="securite">Réinitialiser</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== SAUVEGARDE ===== -->
+        <section class="section" id="sec-sauvegarde">
+            <div class="glass field-card">
+                <h3>Sauvegarde générale</h3>
+                <p class="sub">Enregistre l'intégralité de la configuration dans ce navigateur.</p>
+                <div class="action-row">
+                    <button class="btn violet" id="btnSaveAll">Sauvegarder</button>
+                    <button class="btn" id="btnRestoreAll">Restaurer</button>
+                    <button class="btn danger" id="btnResetAll">Réinitialiser</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== EXPORT ===== -->
+        <section class="section" id="sec-export">
+            <div class="glass field-card">
+                <h3>Export</h3>
+                <p class="sub">Télécharge la configuration actuelle au format JSON.</p>
+                <div class="action-row">
+                    <button class="btn violet" id="btnExport">Exporter JSON</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== IMPORT ===== -->
+        <section class="section" id="sec-import">
+            <div class="glass field-card">
+                <h3>Import</h3>
+                <p class="sub">Charge une configuration depuis un fichier JSON exporté.</p>
+                <div class="dropzone" id="dropzone">
+                    Glisse un fichier .json ici, ou
+                    <label style="color:var(--violet-2); cursor:pointer;">
+                        parcourir<input type="file" id="importFile" accept="application/json" style="display:none;">
+                    </label>
+                </div>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<div id="toastStack"></div>
+
+<script>
+/* ============================================================================
+   ADMIN APP — JavaScript modulaire
+   Sommaire :
+     1. CONFIGURATION PAR DÉFAUT
+     2. MODULE STOCKAGE (localStorage)
+     3. MODULE TOAST
+     4. MODULE VALIDATION
+     5. MODULE AUTHENTIFICATION (login, session, expiration)
+     6. MODULE FORMULAIRES GÉNÉRIQUES
+     7. MODULE IRPP (tranches dynamiques)
+     8. MODULE DASHBOARD
+     9. MODULE NAVIGATION (sidebar, sections)
+     10. MODULE SAUVEGARDE / EXPORT / IMPORT
+     11. INITIALISATION
+   ============================================================================ */
+
+const STORAGE_KEY = 'salary_admin_config';
+const SESSION_KEY = 'salary_admin_session';
+
+/* ===== 1. CONFIGURATION PAR DÉFAUT ===== */
+const DEFAULT_CONFIG = {
+    meta: { version: '1.0.0', lastModified: null, lastSave: null },
+    salaires: {
+        salaireBase: 823.248,
+        primeTransport: 20.000,
+        primePresence: 6.080,
+        rappel: 0.000
+    },
+    primes: {
+        primeLangue: 250.000,
+        primeProductivite: 16.5,
+        primeAssiduite: 220.000,
+        primeExceptionnelle: 0.000
+    },
+    heures: {
+        tauxHeureNormale: 4.826,
+        tauxHeureNuit: 4.826,
+        majorationNuit: 50,
+        tauxHeureDimanche: 25.000,
+        tauxHeureFerie: 38.606,
+        majorationFerie: 150,
+        majorationFerieChomes: 100,
+        tauxHeureSup125: 125,
+        tauxHeureSup150: 150
+    },
+    tickets: {
+        valeurTicket: 8.000,
+        joursParMois: 22,
+        maximum: 300.000,
+        minimum: 0.000,
+        actif: true
+    },
+    cotisations: {
+        assuranceTaux: 7.55,
+        assuranceActif: true,
+        assuranceArrondi: 3,
+        cnssTaux: 9.68,
+        cnssPlafond: 0,
+        cnssActif: true,
+        cssTaux: 0.5,
+        cssActif: true
+    },
+    impots: {
+        tranches: [
+            { min: 0, max: 5000, pct: 0 },
+            { min: 5000, max: 10000, pct: 15 },
+            { min: 10000, max: 20000, pct: 25 },
+            { min: 20000, max: 30000, pct: 30 },
+            { min: 30000, max: 40000, pct: 33 },
+            { min: 40000, max: 50000, pct: 36 },
+            { min: 50000, max: 70000, pct: 38 },
+            { min: 70000, max: null, pct: 40 }
+        ],
+        plafondFraisPro: 2000.000,
+        tauxFraisPro: 10,
+        deductionChefFamille: 300.000,
+        deductionEnfant1: 100.000,
+        deductionEnfant2: 100.000,
+        deductionEnfant3: 100.000,
+        deductionEnfant4: 100.000,
+        maxEnfants: 4
+    },
+    parametres: {
+        nomEntreprise: 'Concentrix',
+        logo: '',
+        couleurPrincipale: '#5b4fe0',
+        couleurSecondaire: '#8b7cf6',
+        version: '1.0.0',
+        devise: 'TND',
+        nombreSemaines: 4,
+        langue: 'fr'
+    },
+    securite: {
+        password: 'admin123',
+        dureeSession: 30,
+        autoriserExport: true,
+        autoriserImport: true
+    }
+};
+
+/* ===== 2. MODULE STOCKAGE ===== */
+const Store = {
+    load() {
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (!raw) return JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+            const parsed = JSON.parse(raw);
+            // Fusion défensive : toute clé manquante retombe sur la valeur par défaut
+            return Store.mergeWithDefaults(parsed);
+        } catch (e) {
+            console.error('Configuration illisible, retour aux valeurs par défaut.', e);
+            return JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+        }
+    },
+    mergeWithDefaults(partial) {
+        const out = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+        Object.keys(out).forEach(section => {
+            if (partial[section] && typeof partial[section] === 'object' && !Array.isArray(partial[section])) {
+                out[section] = Object.assign({}, out[section], partial[section]);
+            }
+        });
+        if (partial.impots && Array.isArray(partial.impots.tranches)) {
+            out.impots.tranches = partial.impots.tranches;
+        }
+        return out;
+    },
+    save(config) {
+        config.meta.lastModified = new Date().toISOString();
+        config.meta.lastSave = new Date().toISOString();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+    }
+};
+
+/* ===== 3. MODULE TOAST ===== */
+const Toast = {
+    show(message, type = 'success') {
+        const stack = document.getElementById('toastStack');
+        const el = document.createElement('div');
+        el.className = `toast glass ${type}`;
+        el.innerHTML = `<span class="dot"></span><span>${message}</span>`;
+        stack.appendChild(el);
+        setTimeout(() => {
+            el.classList.add('leaving');
+            setTimeout(() => el.remove(), 260);
+        }, 3200);
+    }
+};
+
+/* ===== 4. MODULE VALIDATION ===== */
+const Validate = {
+    number(value, def) {
+        if (value === '' || value === null || isNaN(value)) return 'Valeur requise.';
+        const n = Number(value);
+        if (n < 0) return 'Valeur négative interdite.';
+        if (def.max !== undefined && n > def.max) return `Ne peut pas dépasser ${def.max}${def.unit === '%' ? '%' : ''}.`;
+        if (def.min !== undefined && n < def.min) return `Ne peut pas être inférieur à ${def.min}.`;
+        return null;
+    },
+    text(value) {
+        if (value === '' || value === null || value === undefined) return 'Champ requis.';
+        return null;
+    }
+};
+
+/* ===== 5. MODULE AUTHENTIFICATION ===== */
+let inactivityTimer = null;
+
+const Auth = {
+    isLoggedIn() {
+        try {
+            const raw = sessionStorage.getItem(SESSION_KEY);
+            if (!raw) return false;
+            const session = JSON.parse(raw);
+            return session.expires > Date.now();
+        } catch (e) { return false; }
+    },
+    login(password) {
+        const config = App.config;
+        if (password !== config.securite.password) {
+            return false;
+        }
+        const durationMs = (config.securite.dureeSession || 30) * 60 * 1000;
+        sessionStorage.setItem(SESSION_KEY, JSON.stringify({ expires: Date.now() + durationMs }));
+        return true;
+    },
+    refreshSession() {
+        const raw = sessionStorage.getItem(SESSION_KEY);
+        if (!raw) return;
+        const durationMs = (App.config.securite.dureeSession || 30) * 60 * 1000;
+        sessionStorage.setItem(SESSION_KEY, JSON.stringify({ expires: Date.now() + durationMs }));
+    },
+    logout(expired) {
+        sessionStorage.removeItem(SESSION_KEY);
+        clearTimeout(inactivityTimer);
+        document.getElementById('appShell').classList.remove('visible');
+        document.getElementById('loginScreen').classList.remove('hidden');
+        document.getElementById('loginPassword').value = '';
+        if (expired) Toast.show('Session expirée par inactivité.', 'error');
+    },
+    startInactivityWatch() {
+        const reset = () => {
+            clearTimeout(inactivityTimer);
+            Auth.refreshSession();
+            const durationMs = (App.config.securite.dureeSession || 30) * 60 * 1000;
+            inactivityTimer = setTimeout(() => Auth.logout(true), durationMs);
+        };
+        ['mousemove', 'keydown', 'click', 'touchstart', 'scroll'].forEach(evt => {
+            document.addEventListener(evt, reset, { passive: true });
+        });
+        reset();
+    }
+};
+
+/* ===== 6. MODULE FORMULAIRES GÉNÉRIQUES ===== */
+const FIELD_DEFS = {
+    salaires: [
+        { key: 'salaireBase', label: 'Salaire de base', unit: 'TND', min: 0 },
+        { key: 'primeTransport', label: 'Prime de transport', unit: 'TND', min: 0 },
+        { key: 'primePresence', label: 'Prime de présence', unit: 'TND', min: 0 },
+        { key: 'rappel', label: 'Rappel (valeur par défaut)', unit: 'TND', min: 0 }
+    ],
+    primes: [
+        { key: 'primeLangue', label: 'Prime de langue', unit: 'TND', min: 0 },
+        { key: 'primeProductivite', label: 'Prime de productivité', unit: '%', min: 0, max: 100 },
+        { key: 'primeAssiduite', label: "Prime d'assiduité (total mensuel)", unit: 'TND', min: 0 },
+        { key: 'primeExceptionnelle', label: 'Prime exceptionnelle', unit: 'TND', min: 0 }
+    ],
+    heures: [
+        { key: 'tauxHeureNormale', label: 'Valeur heure normale', unit: 'TND', min: 0 },
+        { key: 'tauxHeureNuit', label: 'Taux heure nuit', unit: 'TND', min: 0 },
+        { key: 'majorationNuit', label: 'Majoration nuit', unit: '%', min: 0, max: 200 },
+        { key: 'tauxHeureDimanche', label: 'Taux heure dimanche', unit: 'TND', min: 0 },
+        { key: 'tauxHeureFerie', label: 'Taux heure férié', unit: 'TND', min: 0 },
+        { key: 'majorationFerie', label: 'Majoration férié travaillé', unit: '%', min: 0, max: 300 },
+        { key: 'majorationFerieChomes', label: 'Majoration férié chômé payé', unit: '%', min: 0, max: 300 },
+        { key: 'tauxHeureSup125', label: 'Majoration heure sup 125%', unit: '%', min: 0, max: 300 },
+        { key: 'tauxHeureSup150', label: 'Majoration heure sup 150%', unit: '%', min: 0, max: 300 }
+    ],
+    tickets: [
+        { key: 'valeurTicket', label: 'Valeur du ticket / jour', unit: 'TND', min: 0 },
+        { key: 'joursParMois', label: 'Nombre de jours par mois', unit: 'j', min: 0, max: 31 },
+        { key: 'maximum', label: 'Maximum', unit: 'TND', min: 0 },
+        { key: 'minimum', label: 'Minimum', unit: 'TND', min: 0 },
+        { key: 'actif', label: 'Activation', type: 'bool' }
+    ],
+    cotisations: [
+        { key: 'assuranceTaux', label: 'Taux Assurance Groupe', unit: '%', min: 0, max: 100 },
+        { key: 'assuranceActif', label: 'Assurance activée', type: 'bool' },
+        { key: 'assuranceArrondi', label: 'Arrondi assurance (décimales)', unit: '', min: 0, max: 6 },
+        { key: 'cnssTaux', label: 'Taux CNSS', unit: '%', min: 0, max: 100 },
+        { key: 'cnssPlafond', label: 'Plafond CNSS (0 = aucun)', unit: 'TND', min: 0 },
+        { key: 'cnssActif', label: 'CNSS activée', type: 'bool' },
+        { key: 'cssTaux', label: 'Taux CSS', unit: '%', min: 0, max: 100 },
+        { key: 'cssActif', label: 'CSS activée', type: 'bool' }
+    ],
+    parametres: [
+        { key: 'nomEntreprise', label: 'Nom entreprise', type: 'text' },
+        { key: 'logo', label: 'Logo (URL)', type: 'text' },
+        { key: 'couleurPrincipale', label: 'Couleur principale', type: 'color' },
+        { key: 'couleurSecondaire', label: 'Couleur secondaire', type: 'color' },
+        { key: 'version', label: 'Version', type: 'text' },
+        { key: 'devise', label: 'Devise', type: 'text' },
+        { key: 'nombreSemaines', label: 'Nombre de semaines / mois', unit: '', min: 1, max: 6 },
+        { key: 'langue', label: 'Langue', type: 'text' }
+    ],
+    securite: [
+        { key: 'password', label: 'Mot de passe administrateur', type: 'password' },
+        { key: 'dureeSession', label: "Durée de session", unit: 'min', min: 1, max: 240 },
+        { key: 'autoriserExport', label: 'Autoriser export', type: 'bool' },
+        { key: 'autoriserImport', label: 'Autoriser import', type: 'bool' }
+    ],
+    famille: [
+        { key: 'deductionChefFamille', label: 'Déduction Chef de famille', unit: 'TND', min: 0 },
+        { key: 'deductionEnfant1', label: 'Déduction 1er enfant', unit: 'TND', min: 0 },
+        { key: 'deductionEnfant2', label: 'Déduction 2e enfant', unit: 'TND', min: 0 },
+        { key: 'deductionEnfant3', label: 'Déduction 3e enfant', unit: 'TND', min: 0 },
+        { key: 'deductionEnfant4', label: 'Déduction 4e enfant', unit: 'TND', min: 0 },
+        { key: 'maxEnfants', label: "Maximum d'enfants déductibles", unit: '', min: 0, max: 12 }
+    ]
+};
+
+function buildFieldRow(sectionKey, def, dataObj) {
+    const wrap = document.createElement('div');
+    wrap.className = 'field-item';
+
+    const label = document.createElement('label');
+    label.textContent = def.label;
+    wrap.appendChild(label);
+
+    const control = document.createElement('div');
+    control.className = 'field-control';
+
+    let input;
+    if (def.type === 'bool') {
+        const sw = document.createElement('label');
+        sw.className = 'switch';
+        input = document.createElement('input');
+        input.type = 'checkbox';
+        input.checked = !!dataObj[def.key];
+        sw.appendChild(input);
+        const track = document.createElement('span');
+        track.className = 'switch-track';
+        track.innerHTML = '<span class="switch-thumb"></span>';
+        sw.appendChild(track);
+        control.appendChild(sw);
+    } else {
+        input = document.createElement('input');
+        input.type = (def.type === 'text' || def.type === 'password' || def.type === 'color') ? def.type : 'number';
+        if (input.type === 'number') { input.step = '0.001'; }
+        input.value = dataObj[def.key];
+        control.appendChild(input);
+        if (def.unit) {
+            const unitEl = document.createElement('span');
+            unitEl.className = 'field-unit';
+            unitEl.textContent = def.unit;
+            control.appendChild(unitEl);
+        }
+    }
+
+    wrap.appendChild(control);
+
+    const errorEl = document.createElement('div');
+    errorEl.className = 'field-error';
+    wrap.appendChild(errorEl);
+
+    const commit = () => {
+        if (def.type === 'bool') {
+            dataObj[def.key] = input.checked;
+            return;
+        }
+        if (def.type === 'text' || def.type === 'password' || def.type === 'color') {
+            const err = Validate.text(input.value);
+            input.classList.toggle('invalid', !!err);
+            errorEl.textContent = err || '';
+            if (!err) dataObj[def.key] = input.value;
+            return;
+        }
+        const err = Validate.number(input.value, def);
+        input.classList.toggle('invalid', !!err);
+        errorEl.textContent = err || '';
+        if (!err) dataObj[def.key] = Number(input.value);
+    };
+
+    input.addEventListener(def.type === 'bool' ? 'change' : 'input', commit);
+    input.addEventListener('blur', commit);
+
+    return wrap;
+}
+
+function renderSectionForm(sectionKey, gridId, dataKey) {
+    const grid = document.getElementById(gridId);
+    grid.innerHTML = '';
+    const defs = FIELD_DEFS[sectionKey];
+    const dataObj = dataKey ? App.working[dataKey] : App.working[sectionKey];
+    defs.forEach(def => grid.appendChild(buildFieldRow(sectionKey, def, dataObj)));
+}
+
+/* ===== 7. MODULE IRPP (tranches dynamiques) ===== */
+function renderIrppTable() {
+    const tbody = document.getElementById('irppTbody');
+    tbody.innerHTML = '';
+    App.working.impots.tranches.forEach((tranche, i) => {
+        const tr = document.createElement('tr');
+
+        const tdMin = document.createElement('td');
+        const inMin = document.createElement('input');
+        inMin.type = 'number'; inMin.value = tranche.min; inMin.min = '0';
+        inMin.addEventListener('input', () => { tranche.min = Number(inMin.value) || 0; });
+        tdMin.appendChild(inMin);
+
+        const tdMax = document.createElement('td');
+        const inMax = document.createElement('input');
+        inMax.type = 'number';
+        inMax.value = tranche.max === null ? '' : tranche.max;
+        inMax.placeholder = '∞';
+        inMax.addEventListener('input', () => { tranche.max = inMax.value === '' ? null : Number(inMax.value); });
+        tdMax.appendChild(inMax);
+
+        const tdPct = document.createElement('td');
+        const inPct = document.createElement('input');
+        inPct.type = 'number'; inPct.value = tranche.pct; inPct.min = '0'; inPct.max = '100';
+        inPct.addEventListener('input', () => { tranche.pct = Math.min(100, Math.max(0, Number(inPct.value) || 0)); });
+        tdPct.appendChild(inPct);
+
+        const tdDel = document.createElement('td');
+        const btnDel = document.createElement('button');
+        btnDel.className = 'irpp-row-del';
+        btnDel.textContent = '×';
+        btnDel.title = 'Supprimer cette tranche';
+        btnDel.addEventListener('click', () => {
+            App.working.impots.tranches.splice(i, 1);
+            renderIrppTable();
+        });
+        tdDel.appendChild(btnDel);
+
+        tr.append(tdMin, tdMax, tdPct, tdDel);
+        tbody.appendChild(tr);
+    });
+}
+
+document.getElementById('btnAddTranche').addEventListener('click', () => {
+    const tranches = App.working.impots.tranches;
+    const last = tranches[tranches.length - 1];
+    const newMin = last && last.max !== null ? last.max : 0;
+    if (last) last.max = last.max === null ? last.max : last.max; // no-op, garde la dernière tranche telle quelle
+    tranches.push({ min: newMin, max: null, pct: 0 });
+    renderIrppTable();
+});
+
+/* ===== 8. MODULE DASHBOARD ===== */
+function countParams(obj) {
+    let count = 0;
+    Object.values(obj).forEach(v => {
+        if (Array.isArray(v)) count += v.length * 3; // 3 champs par tranche IRPP
+        else if (v && typeof v === 'object') count += countParams(v);
+        else count += 1;
+    });
+    return count;
+}
+
+function validateConfigStructure(config) {
+    try {
+        const tranches = config.impots.tranches;
+        for (let i = 0; i < tranches.length; i++) {
+            const t = tranches[i];
+            if (t.max !== null && t.min >= t.max) return false;
+            if (t.pct < 0 || t.pct > 100) return false;
+        }
+        if (config.cotisations.cnssTaux < 0 || config.cotisations.cnssTaux > 100) return false;
+        if (config.cotisations.assuranceTaux < 0 || config.cotisations.assuranceTaux > 100) return false;
+        return true;
+    } catch (e) { return false; }
+}
+
+function formatDate(iso) {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    return d.toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+function renderDashboard() {
+    const cfg = App.working;
+    document.getElementById('statParamCount').textContent = countParams({
+        salaires: cfg.salaires, primes: cfg.primes, heures: cfg.heures, tickets: cfg.tickets,
+        cotisations: cfg.cotisations, impots: cfg.impots, parametres: cfg.parametres, securite: cfg.securite
+    });
+    document.getElementById('statLastModified').textContent = formatDate(cfg.meta.lastModified);
+    document.getElementById('statVersion').textContent = cfg.parametres.version || '—';
+    document.getElementById('statLastSave').textContent = formatDate(cfg.meta.lastSave);
+
+    const valid = validateConfigStructure(cfg);
+    const etatEl = document.getElementById('statEtat');
+    etatEl.textContent = valid ? 'Configuration valide' : 'Erreur détectée';
+    etatEl.className = 'value ' + (valid ? 'ok' : 'error');
+}
+
+/* ===== 9. MODULE NAVIGATION ===== */
+const SECTION_TITLES = {
+    dashboard: ['Tableau de bord', "Vue d'ensemble de la configuration"],
+    salaires: ['Salaires', 'Salaire de base et indemnités'],
+    primes: ['Primes', 'Primes variables et exceptionnelles'],
+    heures: ['Heures', 'Taux horaires et majorations'],
+    cotisations: ['Cotisations', 'Assurance, CNSS et CSS'],
+    impots: ['Impôts', 'Barème IRPP et déductions familiales'],
+    tickets: ['Tickets Restaurant', 'Avantage en nature TR'],
+    parametres: ['Paramètres', 'Identité du simulateur'],
+    securite: ['Sécurité', "Accès à l'administration"],
+    sauvegarde: ['Sauvegarde', 'Enregistrement local de la configuration'],
+    export: ['Export', 'Télécharger la configuration'],
+    import: ['Import', 'Charger une configuration']
+};
+
+function goToSection(key) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.section === key));
+    document.getElementById('sec-' + key).classList.add('active');
+    document.getElementById('topbarTitle').textContent = SECTION_TITLES[key][0];
+    document.getElementById('topbarSub').textContent = SECTION_TITLES[key][1];
+
+    if (key === 'dashboard') renderDashboard();
+    if (key === 'salaires') renderSectionForm('salaires', 'grid-salaires');
+    if (key === 'primes') renderSectionForm('primes', 'grid-primes');
+    if (key === 'heures') renderSectionForm('heures', 'grid-heures');
+    if (key === 'cotisations') renderSectionForm('cotisations', 'grid-cotisations');
+    if (key === 'impots') { renderIrppTable(); renderSectionForm('famille', 'grid-famille', 'impots'); }
+    if (key === 'tickets') renderSectionForm('tickets', 'grid-tickets');
+    if (key === 'parametres') renderSectionForm('parametres', 'grid-parametres');
+    if (key === 'securite') renderSectionForm('securite', 'grid-securite');
+
+    // Ferme la sidebar sur mobile après un choix
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarBackdrop').classList.remove('visible');
+}
+
+document.querySelectorAll('.nav-item').forEach(btn => {
+    btn.addEventListener('click', () => goToSection(btn.dataset.section));
+});
+
+document.getElementById('btnHamburger').addEventListener('click', () => {
+    document.getElementById('sidebar').classList.add('open');
+    document.getElementById('sidebarBackdrop').classList.add('visible');
+});
+document.getElementById('sidebarBackdrop').addEventListener('click', () => {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarBackdrop').classList.remove('visible');
+});
+
+/* ===== 10. MODULE SAUVEGARDE / EXPORT / IMPORT ===== */
+function saveSection(sectionKey) {
+    App.config = JSON.parse(JSON.stringify(App.working));
+    Store.save(App.config);
+    Toast.show('Configuration sauvegardée.', 'success');
+    if (document.getElementById('sec-dashboard').classList.contains('active')) renderDashboard();
+}
+
+function cancelSection(sectionKey) {
+    App.working = JSON.parse(JSON.stringify(App.config));
+    goToSection(sectionKey);
+    Toast.show('Modifications annulées.', 'success');
+}
+
+function resetSection(sectionKey) {
+    const defaultSlice = JSON.parse(JSON.stringify(DEFAULT_CONFIG[sectionKey]));
+    App.working[sectionKey] = defaultSlice;
+    goToSection(sectionKey);
+    Toast.show('Valeurs par défaut chargées — Sauvegarder pour confirmer.', 'success');
+}
+
+document.querySelectorAll('[data-save]').forEach(btn => btn.addEventListener('click', () => saveSection(btn.dataset.save)));
+document.querySelectorAll('[data-cancel]').forEach(btn => btn.addEventListener('click', () => cancelSection(btn.dataset.cancel)));
+document.querySelectorAll('[data-reset]').forEach(btn => btn.addEventListener('click', () => {
+    if (confirm('Réinitialiser cette section aux valeurs par défaut ?')) resetSection(btn.dataset.reset);
+}));
+
+document.getElementById('btnSaveAll').addEventListener('click', () => {
+    App.config = JSON.parse(JSON.stringify(App.working));
+    Store.save(App.config);
+    Toast.show('Configuration entièrement sauvegardée.', 'success');
+    renderDashboard();
+});
+
+document.getElementById('btnRestoreAll').addEventListener('click', () => {
+    App.config = Store.load();
+    App.working = JSON.parse(JSON.stringify(App.config));
+    goToSection('dashboard');
+    Toast.show('Dernière sauvegarde restaurée.', 'success');
+});
+
+document.getElementById('btnResetAll').addEventListener('click', () => {
+    if (!confirm('Réinitialiser TOUTE la configuration aux valeurs par défaut ?')) return;
+    App.working = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+    goToSection('dashboard');
+    Toast.show('Toute la configuration a été réinitialisée — Sauvegarder pour confirmer.', 'success');
+});
+
+document.getElementById('btnExport').addEventListener('click', () => {
+    if (!App.config.securite.autoriserExport) {
+        Toast.show("Export désactivé dans Sécurité.", 'error');
+        return;
+    }
+    const blob = new Blob([JSON.stringify(App.config, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `salary-config-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    Toast.show('Export réussi.', 'success');
+});
+
+function handleImportFile(file) {
+    if (!App.config.securite.autoriserImport) {
+        Toast.show('Import désactivé dans Sécurité.', 'error');
+        return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+        try {
+            const parsed = JSON.parse(reader.result);
+            App.working = Store.mergeWithDefaults(parsed);
+            App.config = JSON.parse(JSON.stringify(App.working));
+            Store.save(App.config);
+            goToSection('dashboard');
+            Toast.show('Import réussi.', 'success');
+        } catch (e) {
+            Toast.show('Fichier JSON invalide.', 'error');
+        }
+    };
+    reader.readAsText(file);
+}
+
+document.getElementById('importFile').addEventListener('change', (e) => {
+    if (e.target.files[0]) handleImportFile(e.target.files[0]);
+});
+
+const dropzone = document.getElementById('dropzone');
+['dragover', 'dragenter'].forEach(evt => dropzone.addEventListener(evt, (e) => { e.preventDefault(); dropzone.classList.add('drag'); }));
+['dragleave', 'drop'].forEach(evt => dropzone.addEventListener(evt, (e) => { e.preventDefault(); dropzone.classList.remove('drag'); }));
+dropzone.addEventListener('drop', (e) => {
+    const file = e.dataTransfer.files[0];
+    if (file) handleImportFile(file);
+});
+
+/* ===== 11. INITIALISATION ===== */
+const App = {
+    config: null,
+    working: null
+};
+
+function addRipple(e) {
+    const btn = e.currentTarget;
+    const circle = document.createElement('span');
+    const rect = btn.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    circle.className = 'ripple';
+    circle.style.width = circle.style.height = size + 'px';
+    circle.style.left = (e.clientX - rect.left - size / 2) + 'px';
+    circle.style.top = (e.clientY - rect.top - size / 2) + 'px';
+    btn.style.position = 'relative';
+    btn.appendChild(circle);
+    setTimeout(() => circle.remove(), 600);
+}
+document.querySelectorAll('.btn, .btn-primary, .nav-item').forEach(el => el.addEventListener('click', addRipple));
+
+function boot() {
+    App.config = Store.load();
+    App.working = JSON.parse(JSON.stringify(App.config));
+
+    if (Auth.isLoggedIn()) {
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('appShell').classList.add('visible');
+        goToSection('dashboard');
+        Auth.startInactivityWatch();
+    }
+}
+
+document.getElementById('loginForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const pwd = document.getElementById('loginPassword').value;
+    const errorEl = document.getElementById('loginError');
+    if (Auth.login(pwd)) {
+        errorEl.textContent = '';
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('appShell').classList.add('visible');
+        goToSection('dashboard');
+        Auth.startInactivityWatch();
+        Toast.show('Connexion réussie.', 'success');
+    } else {
+        errorEl.textContent = 'Mot de passe incorrect.';
+    }
+});
+
+document.getElementById('btnLogout').addEventListener('click', () => Auth.logout(false));
+
+boot();
+</script>
+</body>
+</html>

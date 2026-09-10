@@ -1,0 +1,1512 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#111420">
+<title>Simulateur de Salaire</title>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+
+    :root {
+        --bg: #111420;
+        --card: #1a1e2c;
+        --card-2: #1f2434;
+        --border: rgba(255,255,255,0.08);
+        --border-strong: rgba(255,255,255,0.16);
+        --text: #f3f4f8;
+        --text-soft: #969db3;
+        --text-faint: #6a7189;
+        --violet: #6C5CE7;
+        --violet-2: #8b7cf6;
+        --gain: #2fd9a8;
+        --deduct: #ff8fa3;
+        --focus: #a5b4fc;
+        --r-lg: 20px;
+        --r-md: 14px;
+        --r-sm: 10px;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    html, body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: 'Manrope', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+        display: flex;
+        justify-content: center;
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--focus);
+        outline-offset: 2px;
+        border-radius: 6px;
+    }
+
+    h1, h2, h3 { margin: 0; }
+
+    /* ===== App shell ===== */
+    .app {
+        width: 100%;
+        max-width: 480px;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+    }
+
+    /* ===== Hero balance card ===== */
+    .hero-wrap {
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        padding: calc(env(safe-area-inset-top) + 14px) 16px 10px;
+        background: linear-gradient(var(--bg) 60%, transparent);
+    }
+
+    .hero-card {
+        background: linear-gradient(135deg, #5b4fe0 0%, #6C5CE7 55%, #8b7cf6 100%);
+        border-radius: var(--r-lg);
+        padding: 18px 20px 16px;
+        box-shadow: 0 16px 32px -12px rgba(76, 58, 220, 0.55);
+        color: #fff;
+    }
+
+    .hero-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .hero-brand {
+        font-size: 12.5px;
+        font-weight: 600;
+        color: rgba(255,255,255,1);
+    
+    /* Align the text and image vertically */
+        display: inline-flex;
+        align-items: center;
+        gap: 6px; /* Space between logo and text */
+    }
+
+    .hero-brand::before {
+        content: "";
+        display: inline-block;
+        width: 17px;  /* Adjust width to fit your logo */
+        height: 17px; /* Adjust height to fit your logo */
+        background-image: url('https://appexchange.salesforce.com/image_host/1403a91d-b255-403f-8e90-3c7017b790da.png');
+        border-radius: 50%;
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+    }
+
+
+    .hero-badge {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.16);
+    padding: 4px 10px;
+    border-radius: 20px;
+
+    /* Alignement du point et du texte */
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    /* Effet glassmorphism */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Le point vert */
+.hero-badge::before {
+    content: '';
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    background-color: #22c55e; /* Vert Tailwind emerald-500 */
+    border-radius: 50%;
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+    animation: pulse-dot 1.8s infinite ease-in-out;
+}
+
+/* Animation d'impulsion */
+@keyframes pulse-dot {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+    }
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 5px rgba(34, 197, 94, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+    }
+}
+
+    .hero-label {
+        margin: 0 0 2px;
+        font-size: 12.5px;
+        color: rgba(255,255,255,0.75);
+        font-weight: 500;
+    }
+
+    .hero-value {
+        display: flex;
+        align-items: baseline;
+        gap: 6px;
+        font-size: 34px;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .hero-value .hero-unit {
+        font-size: 14px;
+        font-weight: 600;
+        color: rgba(255,255,255,0.7);
+    }
+
+    .hero-stats {
+        display: flex;
+        gap: 18px;
+        margin-top: 14px;
+        padding-top: 12px;
+        border-top: 1px solid rgba(255,255,255,0.18);
+    }
+
+    .hero-stat {
+        font-size: 12px;
+        color: rgba(255,255,255,0.75);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .hero-stat strong {
+        color: #fff;
+        font-weight: 700;
+        font-size: 13px;
+    }
+
+    .dot {
+        width: 7px; height: 7px;
+        border-radius: 50%;
+        flex: none;
+    }
+    .dot.gain { background: #baf5df; }
+    .dot.deduct { background: #ffd0d8; }
+
+    .hero-card-bottom {
+        display: none;
+    }
+
+    .content {
+        flex: 1;
+        padding: 6px 16px 100px;
+    }
+
+    .screen[hidden] { display: none; }
+
+    .screen.enter {
+        animation: screenIn 0.28s ease both;
+    }
+
+    @keyframes screenIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ===== Step cards ===== */
+    .step {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--r-lg);
+        padding: 16px 16px 6px;
+        margin-bottom: 14px;
+    }
+
+    .step h2 {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 15px;
+        font-weight: 700;
+        margin-bottom: 12px;
+    }
+
+    .step-num {
+        flex: none;
+        width: 24px;
+        height: 24px;
+        border-radius: 8px;
+        background: var(--violet);
+        color: #fff;
+        font-size: 12px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .field {
+        padding: 9px 0;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .step > .field:last-of-type { border-bottom: none; }
+
+    .field label {
+        display: block;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-soft);
+        margin-bottom: 6px;
+    }
+
+    .field-control {
+        display: flex;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .field input, .field select {
+        flex: 1;
+        min-width: 0;
+        min-height: 46px;
+        padding: 8px 12px;
+        border: 1px solid transparent;
+        border-radius: var(--r-sm);
+        background: var(--card-2);
+        color: var(--text);
+        font-family: inherit;
+        font-size: 16px;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+        text-align: right;
+        -webkit-appearance: none;
+        appearance: none;
+        transition: border-color 0.15s ease;
+    }
+
+    .field input:focus, .field select:focus {
+        border-color: var(--violet-2);
+        outline: none;
+    }
+
+    /* Masquage des flèches natives du navigateur (remplacées par le stepper) */
+    .field input[type="number"]::-webkit-inner-spin-button,
+    .field input[type="number"]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    .field input[type="number"] {
+        -moz-appearance: textfield;
+    }
+
+    /* ===== Interrupteur (toggle) — éligibilité à une prime ===== */
+    .toggle-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 42px;
+        height: 24px;
+        flex: none;
+        cursor: pointer;
+    }
+
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+        position: absolute;
+    }
+
+    .switch-track {
+        position: absolute;
+        inset: 0;
+        background: var(--card-2);
+        border: 1px solid var(--border-strong);
+        border-radius: 999px;
+        transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .switch-thumb {
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 18px;
+        height: 18px;
+        background: var(--text-soft);
+        border-radius: 50%;
+        transition: transform 0.15s ease, background 0.15s ease;
+    }
+
+    .switch input:checked + .switch-track {
+        background: var(--violet);
+        border-color: var(--violet);
+    }
+
+    .switch input:checked + .switch-track .switch-thumb {
+        transform: translateX(18px);
+        background: #fff;
+    }
+
+    /* ===== Stepper personnalisé (+/-) ===== */    .stepper {
+        flex: none;
+        width: 26px;
+        display: flex;
+        flex-direction: column;
+        border-radius: var(--r-sm);
+        overflow: hidden;
+        border: 1px solid var(--border-strong);
+    }
+
+    .stepper-btn {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 0;
+        background: var(--card-2);
+        border: none;
+        color: var(--text-soft);
+        cursor: pointer;
+        padding: 0;
+        transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .stepper-btn.up { border-bottom: 1px solid var(--border); }
+
+    .stepper-btn:hover { background: var(--violet); color: #fff; }
+    .stepper-btn:active { background: var(--violet-2); }
+
+    .stepper-btn svg { width: 9px; height: 9px; flex: none; }
+
+    .field select {
+        text-align: left;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5.5 7.5l4.5 4.5 4.5-4.5' stroke='%23969db3' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        padding-right: 32px;
+    }
+
+    .field .unit {
+        flex: none;
+        width: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--text-faint);
+        background: transparent;
+        border: 1px dashed var(--border-strong);
+        border-radius: var(--r-sm);
+    }
+
+    /* Constants */
+    .constants { margin-bottom: 14px; }
+
+    .constants summary {
+        list-style: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 4px 0 12px;
+    }
+
+    .constants summary::-webkit-details-marker { display: none; }
+
+    .constants summary .chev {
+        width: 20px; height: 20px;
+        border-radius: 50%;
+        background: var(--card-2);
+        display: flex; align-items: center; justify-content: center;
+        transition: transform 0.15s ease;
+        flex: none;
+        color: var(--text-soft);
+    }
+
+    .constants[open] summary .chev { transform: rotate(180deg); }
+
+    .const-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 9px 0;
+        border-bottom: 1px solid var(--border);
+        font-size: 13.5px;
+        color: var(--text-soft);
+    }
+
+    .const-row .const-value {
+        font-variant-numeric: tabular-nums;
+        color: var(--text);
+        font-weight: 600;
+    }
+
+    /* ===== Ledger ===== */
+    .ledger-group {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--r-lg);
+        padding: 4px 16px;
+        margin-bottom: 12px;
+    }
+
+    .ledger-group h3 {
+        font-size: 11.5px;
+        color: var(--text-faint);
+        font-weight: 700;
+        padding: 12px 0 8px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .ledger-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 10px;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--border);
+        font-size: 13.5px;
+    }
+
+    .ledger-group .ledger-row:last-child { border-bottom: none; }
+
+    .ledger-row .desc { flex: 1; min-width: 0; color: var(--text); }
+    .ledger-row .desc .base {
+        display: block;
+        font-size: 11px;
+        color: var(--text-faint);
+        margin-top: 2px;
+    }
+
+    .ledger-row .amount {
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+        font-weight: 700;
+        color: var(--gain);
+    }
+
+    .ledger-row.deduct .amount { color: var(--deduct); }
+
+    .ledger-total {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        padding: 14px 16px;
+        margin-bottom: 12px;
+        border-radius: var(--r-lg);
+        background: var(--card);
+        border: 1px solid var(--border);
+        font-weight: 700;
+    }
+
+    .ledger-total .amount { font-variant-numeric: tabular-nums; }
+
+    .ledger-total.final {
+        background: linear-gradient(135deg, #5b4fe0, #8b7cf6);
+        border: none;
+        font-size: 16px;
+        color: #fff;
+    }
+
+    /* ===== Floating bottom nav ===== */
+    .tabbar-float {
+        position: fixed;
+        left: 50%;
+        bottom: calc(14px + env(safe-area-inset-bottom));
+        transform: translateX(-50%);
+        width: calc(100% - 32px);
+        max-width: 448px;
+        z-index: 40;
+        display: flex;
+        gap: 4px;
+        padding: 6px;
+        background: rgba(26, 30, 44, 0.82);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        border: 1px solid var(--border-strong);
+        border-radius: 18px;
+        box-shadow: 0 12px 30px -10px rgba(0,0,0,0.5);
+    }
+
+    .tab-btn {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        background: none;
+        border: none;
+        padding: 11px 8px;
+        color: var(--text-soft);
+        font-size: 13px;
+        font-weight: 700;
+        font-family: inherit;
+        border-radius: 13px;
+        transition: background 0.18s ease, color 0.18s ease;
+    }
+
+    .tab-btn svg { width: 18px; height: 18px; flex: none; }
+
+    .tab-btn.active {
+        color: #fff;
+        background: var(--violet);
+    }
+
+    /* ===== Contact / réseaux sociaux ===== */
+    .app-footer {
+        text-align: center;
+        padding: 24px 16px 150px;
+        font-size: 11px;
+        color: var(--text-faint);
+        line-height: 1.6;
+    }
+
+    .contact-wrap {
+        display: flex;
+        justify-content: center;
+        gap: 14px;
+        padding-top: 16px;
+    }
+
+    .contact-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: var(--card-2);
+        border: 1px solid var(--border-strong);
+        color: var(--text-soft);
+        transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+    }
+
+    .contact-btn svg { width: 18px; height: 18px; }
+
+    .contact-btn:hover {
+        transform: translateY(-2px);
+        color: #fff;
+        border-color: transparent;
+    }
+
+    .contact-btn.instagram:hover { background: linear-gradient(45deg, #f58529, #dd2a7b, #8134af, #515bd4); }
+    .contact-btn.facebook:hover { background: #1877f2; }
+    .contact-btn.whatsapp:hover { background: #25d366; }
+
+    /* ===== Version Bureau / Tablette (≥ 860px) ===== */
+    /* Sur les écrans larges, les deux écrans (Saisie / Bulletin) sont affichés
+       côte à côte en permanence — plus besoin de basculer par onglet. */
+    @media (min-width: 860px) {
+        body { align-items: flex-start; }
+
+        .app {
+            max-width: 1180px;
+            padding-bottom: 40px;
+        }
+
+        /* Le hero du haut est masqué en bureau : le Net à payer s'affiche
+           désormais en bas à droite, dans le bulletin. */
+        .hero-wrap { display: none; }
+
+        .content {
+            display: grid;
+            grid-template-columns: minmax(380px, 480px) 1fr;
+            align-items: stretch;
+            gap: 24px;
+            padding: 28px 28px 40px;
+        }
+
+        /* Les deux écrans restent visibles simultanément, sans logique d'onglet */
+        .screen, .screen[hidden] {
+            display: block !important;
+            animation: none !important;
+            opacity: 1 !important;
+            transform: none !important;
+        }
+
+        /* Colonnes alignées */
+        #screen-saisie, #screen-bulletin {
+            display: flex;
+            flex-direction: column;
+        }
+
+        #screen-bulletin > .ledger-total.final {
+            margin-top: auto;
+        }
+
+        /* Sur bureau, on masque le total simple et on affiche la carte "hero" */
+        #finalTotalMobile { display: none; }
+
+        .hero-card-bottom {
+            display: block;
+            margin-top: auto;
+        }
+
+        /* Barre d'onglets flottante inutile en version bureau */
+        .tabbar-float { display: none; }
+        .app-footer { padding-bottom: 24px; }
+
+        .step, .ledger-group, .ledger-total {
+            transition: border-color 0.15s ease;
+        }
+        .step:hover { border-color: var(--border-strong); }
+    }
+
+    @media (min-width: 1240px) {
+        .content { grid-template-columns: 480px 1fr; }
+    }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+    <header class="hero-wrap">
+        <div class="hero-card">
+            <div class="hero-top">
+                <span class="hero-brand">Concentrix</span>
+                <span class="hero-badge">Mise à jour en temps réel</span>
+            </div>
+            <p class="hero-label">Net à payer estimé</p>
+            <div class="hero-value"><span id="outNetAPayerHero">0.000</span><span class="hero-unit">TND</span></div>
+            <div class="hero-stats">
+                <span class="hero-stat"><span class="dot gain"></span>Brut <strong id="outTotalBrutHero">0.000</strong></span>
+                <span class="hero-stat"><span class="dot deduct"></span>Retenues <strong id="outRetenuesHero">0.000</strong></span>
+            </div>
+        </div>
+    </header>
+
+    <!-- ===================== ÉCRAN 1 : SAISIE ===================== -->
+    <main class="content">
+    <div class="screen enter" id="screen-saisie">
+
+        <div class="step">
+            <h2><span class="step-num">1</span>Situation familiale</h2>
+            <div class="field">
+                <label for="situationMaritale">Statut marital</label>
+                <div class="field-control">
+                    <select id="situationMaritale">
+                        <option value="300.000">Marié(e) / Chef de famille</option>
+                        <option value="0.000">Célibataire / Non chef de famille</option>
+                    </select>
+                </div>
+            </div>
+            <div class="field">
+                <label for="enfantsACharge">Enfants à charge (scolarisés)</label>
+                <div class="field-control">
+                    <input type="number" id="enfantsACharge" value="0" min="0" max="4" step="1" inputmode="numeric">
+                    <span class="unit">Nbr</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="step">
+            <h2><span class="step-num">2</span>Heures &amp; variables du mois</h2>
+            <div class="field">
+                <label for="heuresNuit">Heures de nuit</label>
+                <div class="field-control">
+                    <input type="number" id="heuresNuit" value="0.000" min="0" step="0.001" inputmode="decimal">
+                    <span class="unit">Hrs</span>
+                </div>
+            </div>
+            <div class="field">
+                <label for="dimanchesTravailles">Dimanches travaillés</label>
+                <div class="field-control">
+                    <input type="number" id="dimanchesTravailles" value="0.000" min="0" max="4" step="0.001" inputmode="decimal">
+                    <span class="unit">Jrs</span>
+                </div>
+            </div>
+            <div class="field">
+                <label for="joursFeries">Jours fériés (150%)</label>
+                <div class="field-control">
+                    <input type="number" id="joursFeries" value="0.000" min="0" step="0.001" inputmode="decimal">
+                    <span class="unit">Jrs</span>
+                </div>
+            </div>
+            <div class="field">
+                <label for="hSup125">Heures sup (125%)</label>
+                <div class="field-control">
+                    <input type="number" id="hSup125" value="0.000" min="0" step="0.001" inputmode="decimal">
+                    <span class="unit">Hrs</span>
+                </div>
+            </div>
+            <div class="field">
+                <label for="hSup150">Heures sup (150%)</label>
+                <div class="field-control">
+                    <input type="number" id="hSup150" value="0.000" min="0" step="0.001" inputmode="decimal">
+                    <span class="unit">Hrs</span>
+                </div>
+            </div>
+            <div class="field">
+                <label for="heuresManquantes">Heures manquantes (WFM)</label>
+                <div class="field-control">
+                    <input type="number" id="heuresManquantes" value="0.000 "min="0" step="0.001" inputmode="decimal">
+                    <span class="unit">Hrs</span>
+                </div>
+            </div>
+            <div class="field">
+                <label for="primeProductivite">Palier prime productivité</label>
+                <div class="field-control">
+                    <select id="primeProductivite">
+                        <option value="0">0 %</option>
+                        <option value="0.15">15 %</option>
+                        <option value="0.165">16.5 %</option>
+                        <option value="0.18">18 %</option>
+                        <option value="0.20">20 %</option>
+                    </select>
+                </div>
+            </div>
+            <div class="field">
+                <label for="rappelsDivers">Rappels divers</label>
+                <div class="field-control">
+                    <input type="number" id="rappelsDivers" value="0.000" step="0.001" inputmode="decimal">
+                    <span class="unit">TND</span>
+                </div>
+            </div>
+            <div class="field" style="flex-direction:column; align-items:stretch; gap:8px;">
+                <label style="margin-bottom:2px;">Assiduité par semaine — mois sur 4 semaines</label>
+                <div id="weeksContainer" style="display:flex; flex-direction:column; gap:8px;"></div>
+                <span id="hintTranche" style="font-size:11px; color:var(--text-faint);">Une tranche d'assiduité de 55.000 TND est perdue pour chaque semaine décochée (non assidue).</span>
+            </div>
+            <div class="field">
+                <label for="joursAbsenceTotal">Jours d'absence (total du mois)</label>
+                <div class="field-control">
+                    <input type="number" id="joursAbsenceTotal" value="0.000" min="0" step="0.001" inputmode="decimal">
+                    <span class="unit">Jrs</span>
+                </div>
+            </div>
+            <div class="field">
+                <label for="avances">Avances à déduire</label>
+                <div class="field-control">
+                    <input type="number" id="avances" value="0.000" min="0" step="0.001" inputmode="decimal">
+                    <span class="unit">TND</span>
+                </div>
+            </div>
+            <div class="field">
+                <label for="deteriorations">Détériorations / pertes</label>
+                <div class="field-control">
+                    <input type="number" id="deteriorations" value="0.000" min="0" step="0.001" inputmode="decimal">
+                    <span class="unit">TND</span>
+                </div>
+            </div>
+        </div>
+
+        <details class="constants">
+            <summary>
+                <h2 style="font-size:15px;"><span class="step-num">3</span>&nbsp;&nbsp;Constantes contractuelles</h2>
+                <span class="chev">
+                    <svg width="10" height="10" viewBox="0 0 20 20" fill="none"><path d="M5 7.5l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+            </summary>
+            <div class="field">
+                <label for="baseSalaryInput">Salaire de base mensuel</label>
+                <div class="field-control">
+                    <input type="number" id="baseSalaryInput" value="823.248" step="0.001" inputmode="decimal">
+                    <span class="unit">TND</span>
+                </div>
+            </div>
+            <div class="const-row"><span>Indemnité de présence</span><span class="const-value">6.080 TND</span></div>
+            <div class="const-row"><span>Indemnité de transport</span><span class="const-value">20.000 TND</span></div>
+            <div class="const-row"><span>Prime assiduité (calculée / 220.000 TND ÷ nb semaines)</span><span class="const-value"><span id="outAssiduiteConst">220.000</span> TND</span></div>
+            <div class="field toggle-row">
+                <div style="display:flex; flex-direction:column; gap:2px;">
+                    <label for="langueEligible" style="margin:0;">Prime de langue anglais</label>
+                    <span style="font-size:11px; color:var(--text-faint);">250.000 TND si éligible</span>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="langueEligible" checked>
+                    <span class="switch-track"><span class="switch-thumb"></span></span>
+                </label>
+            </div>
+            <div class="const-row"><span>Avantage nature TR (22 j. − absences, à 8.000 TND/j)</span><span class="const-value"><span id="outAvTrConst">176.000</span> TND</span></div>
+            <div class="const-row"><span>Avantage nature assurance (7.55% du Brut)</span><span class="const-value"><span id="outAssuranceConst">0.000</span> TND</span></div>
+        </details>
+    </div>
+
+    <!-- ===================== ÉCRAN 2 : BULLETIN ===================== -->
+    <div class="screen" id="screen-bulletin" hidden>
+
+        <div class="ledger-group">
+            <h3>Gains</h3>
+            <div class="ledger-row"><span class="desc">Salaire de base mensuel</span><span class="amount"><span id="outSalaireBase">823.248</span> TND</span></div>
+            <div class="ledger-row"><span class="desc">Indemnité de présence</span><span class="amount">6.080 TND</span></div>
+            <div class="ledger-row"><span class="desc">Indemnité de transport</span><span class="amount">20.000 TND</span></div>
+            <div class="ledger-row"><span class="desc">Prime conventionnelle d'assiduité</span><span class="amount"><span id="outAssiduite">220.000</span> TND</span></div>
+            <div class="ledger-row"><span class="desc">Prime de langue anglais</span><span class="amount"><span id="outLangue">250.000</span> TND</span></div>
+            <div class="ledger-row"><span class="desc">Prime mensuelle de productivité</span><span class="amount"><span id="outProductivite">0.000</span> TND</span></div>
+            <div class="ledger-row"><span class="desc">Majoration heures de nuit<span class="base"><span id="outBaseNuit">0.000</span> Hrs</span></span><span class="amount"><span id="outGainNuit">0.000</span> TND</span></div>
+            <div class="ledger-row"><span class="desc">Prime dimanche travaillé<span class="base"><span id="outBaseDim">0.000</span> Jrs</span></span><span class="amount"><span id="outGainDim">0.000</span> TND</span></div>
+            <div class="ledger-row"><span class="desc">Jours fériés rémunérés (150%)<span class="base"><span id="outBaseFerie">0.000</span> Jrs</span></span><span class="amount"><span id="outGainFerie">0.000</span> TND</span></div>
+            <div class="ledger-row"><span class="desc">Heures supplémentaires (125%)<span class="base"><span id="outBaseSup125">0.000</span> Hrs</span></span><span class="amount"><span id="outGainSup125">0.000</span> TND</span></div>
+            <div class="ledger-row"><span class="desc">Heures supplémentaires (150%)<span class="base"><span id="outBaseSup150">0.000</span> Hrs</span></span><span class="amount"><span id="outGainSup150">0.000</span> TND</span></div>
+            <div class="ledger-row"><span class="desc">Rappels divers</span><span class="amount"><span id="outRappels">0.000</span> TND</span></div>
+            <div class="ledger-row"><span class="desc">Avantage en nature TR</span><span class="amount"><span id="outAvTrGain">169.000</span> TND</span></div>
+            <div class="ledger-row"><span class="desc">Avantage en nature ASS GRP</span><span class="amount"><span id="outGainAssurance">0.000</span> TND</span></div>
+            <div class="ledger-row deduct"><span class="desc">Rappel de jours (négatif)</span><span class="amount">− <span id="outRetenueAbs">0.000</span> TND</span></div>
+            <div class="ledger-row deduct"><span class="desc">Absences non rémunérées<span class="base"><span id="outBaseWfm">0.000</span> Hrs</span></span><span class="amount">− <span id="outRetenueWFM">0.000</span> TND</span></div>
+        </div>
+
+        <div class="ledger-total">
+            <span>Total brut</span>
+            <span class="amount"><span id="outTotalBrut">0.000</span> TND</span>
+        </div>
+
+        <div class="ledger-group">
+            <h3>Charges &amp; impôts</h3>
+            <div class="ledger-row deduct"><span class="desc">Cotisation CNSS (9.68%)<span class="base"><span id="outBaseCnss">0.000</span> TND base</span></span><span class="amount">− <span id="outCnss">0.000</span> TND</span></div>
+            <div class="ledger-row deduct"><span class="desc">Retenue IRPP (selon barème)<span class="base"><span id="outBaseIrpp">0.000</span> TND base</span></span><span class="amount">− <span id="outIrpp">0.000</span> TND</span></div>
+            <div class="ledger-row deduct"><span class="desc">Contribution CSS (0.50%)</span><span class="amount">− <span id="outCss">0.000</span> TND</span></div>
+        </div>
+
+        <div class="ledger-total">
+            <span>Salaire net</span>
+            <span class="amount"><span id="outSalaireNet">0.000</span> TND</span>
+        </div>
+
+        <div class="ledger-group">
+            <h3>Ajustements finaux</h3>
+            <div class="ledger-row deduct"><span class="desc">Reprise avantage nature ASS GRP</span><span class="amount">− <span id="outRetenueAssurance">0.000</span> TND</span></div>
+            <div class="ledger-row deduct"><span class="desc">Avances sur salaire à retenir</span><span class="amount">− <span id="outRetenueAvance">0.000</span> TND</span></div>
+            <div class="ledger-row deduct"><span class="desc">Retenues détériorations / pertes</span><span class="amount">− <span id="outRetenuePertes">0.000</span> TND</span></div>
+            <div class="ledger-row deduct"><span class="desc">Reprise avantage nature TR</span><span class="amount">− <span id="outAvTrRetenue">169.000</span> TND</span></div>
+        </div>
+
+        <div class="ledger-total final" id="finalTotalMobile">
+            <span>Net à payer</span>
+            <span class="amount"><span id="outNetAPayer">0.000</span> TND</span>
+        </div>
+
+        <div class="hero-card hero-card-bottom" id="heroBottom">
+            <div class="hero-top">
+                <span class="hero-brand">Concentrix</span>
+                <span class="hero-badge">Mise à jour en temps réel</span>
+            </div>
+            <p class="hero-label">Net à payer estimé</p>
+            <div class="hero-value"><span id="outNetAPayerHero2">0.000</span><span class="hero-unit">TND</span></div>
+            <div class="hero-stats">
+                <span class="hero-stat"><span class="dot gain"></span>Brut <strong id="outTotalBrutHero2">0.000</strong></span>
+                <span class="hero-stat"><span class="dot deduct"></span>Retenues <strong id="outRetenuesHero2">0.000</strong></span>
+            </div>
+        </div>
+    </div>
+    </main>
+    <footer class="app-footer">
+        Développée par Yosri GHAMMOURI™ <br>
+            © 2026 • Tout droit réservé.
+
+        <div class="contact-wrap">
+            <a class="contact-btn instagram" href="https://instagram.com/yosrii__" target="_blank" rel="noopener" aria-label="Instagram">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.3" cy="6.7" r="1.1" fill="currentColor" stroke="none"/></svg>
+            </a>
+            <a class="contact-btn facebook" href="https://facebook.com/yoss8ii" target="_blank" rel="noopener" aria-label="Facebook">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-8h2.7l.4-3.1h-3.1V8c0-.9.3-1.5 1.6-1.5h1.7V3.7C16.5 3.6 15.5 3.5 14.3 3.5c-2.5 0-4.2 1.5-4.2 4.3v2.1H7.4V13h2.7v8h3.4z"/></svg>
+            </a>
+            <a class="contact-btn whatsapp" href="https://wa.me/21629620537" target="_blank" rel="noopener" aria-label="WhatsApp">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5A9.5 9.5 0 003.6 17L2.5 21.5l4.6-1.2A9.5 9.5 0 1012 2.5zm0 1.9a7.6 7.6 0 016.2 12 7.5 7.5 0 01-6.2 3 7.6 7.6 0 01-3.9-1.1l-.3-.2-2.7.7.7-2.6-.2-.3A7.6 7.6 0 0112 4.4zm-3 3.9c-.2 0-.5 0-.7.3-.2.3-.9.9-.9 2.1s1 2.4 1.1 2.6c.1.2 2 3 4.7 4.2 2.3 1 2.8.8 3.3.7.5 0 1.6-.6 1.8-1.3.2-.6.2-1.2.2-1.3-.1-.1-.3-.2-.5-.3l-2.1-1c-.3-.1-.5-.1-.6.1-.2.3-.7.9-.9 1.1-.1.2-.3.2-.6.1-.3-.2-1.2-.5-2.3-1.5-.8-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6l.4-.5c.1-.2.2-.3.2-.5.1-.2 0-.4 0-.5-.1-.1-.6-1.5-.8-2-.2-.5-.4-.4-.6-.4z"/></svg>
+            </a>
+        </div>
+    </footer>
+
+    <!-- ===================== NAVIGATION FLOTTANTE ===================== -->
+    <nav class="tabbar-float">
+        <button class="tab-btn active" data-target="screen-saisie" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            <span>Saisie</span>
+        </button>
+        <button class="tab-btn" data-target="screen-bulletin" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l3 3v15H6z"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>
+            <span>Bulletin</span>
+        </button>
+    </nav>
+
+</div>
+
+<script>
+/* ============================================================================
+   CALCULATEUR DE SALAIRE — CONCENTRIX
+   ----------------------------------------------------------------------------
+   Sommaire :
+     1. CONSTANTES DE PAIE (taux, barèmes, montants fixes)
+     2. RÉFÉRENCES DOM (tous les champs de saisie)
+     3. GÉNÉRATION DYNAMIQUE — semaines d'absence (Semaine 1 à 4)
+     4. MOTEUR FISCAL — barème IRPP par tranches
+     5. FONCTIONS DE CALCUL — une fonction par bloc du bulletin
+     6. ORCHESTRATION — calculateSalary() appelle les fonctions ci-dessus
+     7. AFFICHAGE — mise à jour du DOM avec les résultats
+     8. ÉVÉNEMENTS — recalcul en temps réel à chaque saisie
+     9. UI — boutons +/- (steppers) et navigation par onglets
+     10. INITIALISATION
+   ============================================================================ */
+
+
+    /* ===== 1. CONSTANTES DE PAIE =====
+       Valeurs par défaut, remplacées automatiquement si une configuration
+       existe dans localStorage (déposée depuis admin.html). Voir le module
+       "CONFIG ADMIN" juste après les références DOM. */
+    let NB_SEMAINES = 4;                     // Mois calculé sur 4 semaines fixes
+    let PRIME_ASSIDUITE_TOTAL = 220.000;     // Prime totale répartie sur les semaines
+    let JOURS_TR_BASE = 22;                  // Jours travaillés de référence (avantage TR)
+    let VALEUR_JOURNALIERE_TR = 8.000;       // TND / jour travaillé pour l'avantage TR
+    let PRESENCE_INDEMNITY = 6.080;          // Indemnité de présence (fixe)
+    let TRANSPORT_INDEMNITY = 20.000;        // Indemnité de transport (fixe)
+    let LANGUE_PRIME = 250.000;              // Prime de langue anglaise (fixe)
+    let PRIME_DIMANCHE = 25.000;             // TND / dimanche travaillé
+    let TAUX_CNSS = 0.0968;                  // Cotisation salariale CNSS (9.68%)
+    let TAUX_ASSURANCE = 0.0755;             // Assurance groupe = 7.55% du Brut
+    let TAUX_CSS = 0.005;                    // Contribution sociale de solidarité (0.5%)
+    let PLAFOND_FRAIS_PRO = 2000.000;        // Plafond annuel des frais professionnels
+    let TAUX_FRAIS_PRO = 0.10;               // Taux des frais professionnels forfaitaires
+    let DEDUCTION_PAR_ENFANT = 100.000;      // TND / enfant à charge (valeur par défaut)
+    let DEDUCTIONS_ENFANTS = null;           // [enfant1, enfant2, enfant3, enfant4] si config admin fournie
+    let MAX_ENFANTS_DEDUCTIBLES = 4;
+    let SALAIRE_BASE_REFERENCE = 823.248;    // Salaire de référence pour les taux proportionnels
+    let TAUX_HORAIRE_REF = 4.826;            // Taux horaire de référence (avant proratisation)
+    let MAJORATION_NUIT_PCT = 0.50;          // Majoration heure de nuit
+    let TAUX_JOURNALIER_REF = 38.606;        // Taux journalier de référence (fériés, absences, WFM)
+    let MAJORATION_SUP125_PCT = 1.25;
+    let MAJORATION_SUP150_PCT = 1.50;
+    let MAJORATION_FERIE_PCT = 1.50;
+    let ASSURANCE_ACTIVE = true;
+    let CNSS_ACTIVE = true;
+    let CSS_ACTIVE = true;
+    let TICKETS_ACTIFS = true;
+    let IRPP_TRANCHES = null;                // Barème par défaut si null (voir calculerIrppAnnuel)
+
+
+
+    /* ===== 2. RÉFÉRENCES DOM ===== */
+    const inBaseSalary = document.getElementById('baseSalaryInput');
+    const weeksContainer = document.getElementById('weeksContainer');
+
+    const inHeuresNuit = document.getElementById('heuresNuit');
+    const inDimanches = document.getElementById('dimanchesTravailles');
+    const inJoursFeries = document.getElementById('joursFeries');
+    const inHSup125 = document.getElementById('hSup125');
+    const inHSup150 = document.getElementById('hSup150');
+    const inWfm = document.getElementById('heuresManquantes');
+    const inProductivite = document.getElementById('primeProductivite');
+    const inRappels = document.getElementById('rappelsDivers');
+    const inAvances = document.getElementById('avances');
+    const inPertes = document.getElementById('deteriorations');
+
+    const inSituationMaritale = document.getElementById('situationMaritale');
+    const inEnfantsACharge = document.getElementById('enfantsACharge');
+    const inLangueEligible = document.getElementById('langueEligible');
+    const inJoursAbsenceTotal = document.getElementById('joursAbsenceTotal');
+
+
+    /* ===== 2bis. CONFIG ADMIN — lecture de localStorage =====
+       Si admin.html a déposé une configuration ("salary_admin_config"),
+       elle remplace ici les valeurs par défaut ci-dessus. Aucune valeur
+       codée en dur n'est utilisée si la configuration la définit. */
+    function loadAdminConfig() {
+        let cfg;
+        try {
+            const raw = localStorage.getItem('salary_admin_config');
+            if (!raw) return;
+            cfg = JSON.parse(raw);
+        } catch (e) {
+            console.warn('Configuration admin illisible, valeurs par défaut conservées.', e);
+            return;
+        }
+
+        if (cfg.salaires) {
+            if (cfg.salaires.salaireBase !== undefined) {
+                SALAIRE_BASE_REFERENCE = cfg.salaires.salaireBase;
+                if (inBaseSalary && !inBaseSalary.dataset.userEdited) inBaseSalary.value = cfg.salaires.salaireBase.toFixed(3);
+            }
+            if (cfg.salaires.primeTransport !== undefined) TRANSPORT_INDEMNITY = cfg.salaires.primeTransport;
+            if (cfg.salaires.primePresence !== undefined) PRESENCE_INDEMNITY = cfg.salaires.primePresence;
+            if (cfg.salaires.rappel !== undefined && inRappels) inRappels.value = Number(cfg.salaires.rappel).toFixed(3);
+        }
+
+        if (cfg.primes) {
+            if (cfg.primes.primeLangue !== undefined) LANGUE_PRIME = cfg.primes.primeLangue;
+            if (cfg.primes.primeAssiduite !== undefined) PRIME_ASSIDUITE_TOTAL = cfg.primes.primeAssiduite;
+        }
+
+        if (cfg.heures) {
+            if (cfg.heures.tauxHeureNormale !== undefined) TAUX_HORAIRE_REF = cfg.heures.tauxHeureNormale;
+            if (cfg.heures.majorationNuit !== undefined) MAJORATION_NUIT_PCT = cfg.heures.majorationNuit / 100;
+            if (cfg.heures.tauxHeureFerie !== undefined) TAUX_JOURNALIER_REF = cfg.heures.tauxHeureFerie;
+            if (cfg.heures.tauxHeureDimanche !== undefined) PRIME_DIMANCHE = cfg.heures.tauxHeureDimanche;
+            if (cfg.heures.majorationFerie !== undefined) MAJORATION_FERIE_PCT = cfg.heures.majorationFerie / 100;
+            if (cfg.heures.tauxHeureSup125 !== undefined) MAJORATION_SUP125_PCT = cfg.heures.tauxHeureSup125 / 100;
+            if (cfg.heures.tauxHeureSup150 !== undefined) MAJORATION_SUP150_PCT = cfg.heures.tauxHeureSup150 / 100;
+        }
+
+        if (cfg.tickets) {
+            if (cfg.tickets.valeurTicket !== undefined) VALEUR_JOURNALIERE_TR = cfg.tickets.valeurTicket;
+            if (cfg.tickets.joursParMois !== undefined) JOURS_TR_BASE = cfg.tickets.joursParMois;
+            if (cfg.tickets.actif !== undefined) TICKETS_ACTIFS = cfg.tickets.actif;
+        }
+
+        if (cfg.cotisations) {
+            if (cfg.cotisations.assuranceTaux !== undefined) TAUX_ASSURANCE = cfg.cotisations.assuranceTaux / 100;
+            if (cfg.cotisations.assuranceActif !== undefined) ASSURANCE_ACTIVE = cfg.cotisations.assuranceActif;
+            if (cfg.cotisations.cnssTaux !== undefined) TAUX_CNSS = cfg.cotisations.cnssTaux / 100;
+            if (cfg.cotisations.cnssActif !== undefined) CNSS_ACTIVE = cfg.cotisations.cnssActif;
+            if (cfg.cotisations.cssTaux !== undefined) TAUX_CSS = cfg.cotisations.cssTaux / 100;
+            if (cfg.cotisations.cssActif !== undefined) CSS_ACTIVE = cfg.cotisations.cssActif;
+        }
+
+        if (cfg.impots) {
+            if (Array.isArray(cfg.impots.tranches)) {
+                IRPP_TRANCHES = cfg.impots.tranches.map(t => ({
+                    limite: t.max === null || t.max === undefined ? Infinity : t.max,
+                    taux: t.pct / 100
+                }));
+            }
+            if (cfg.impots.plafondFraisPro !== undefined) PLAFOND_FRAIS_PRO = cfg.impots.plafondFraisPro;
+            if (cfg.impots.tauxFraisPro !== undefined) TAUX_FRAIS_PRO = cfg.impots.tauxFraisPro / 100;
+            if (cfg.impots.maxEnfants !== undefined) MAX_ENFANTS_DEDUCTIBLES = cfg.impots.maxEnfants;
+            if (cfg.impots.deductionEnfant1 !== undefined) {
+                DEDUCTIONS_ENFANTS = [
+                    cfg.impots.deductionEnfant1, cfg.impots.deductionEnfant2,
+                    cfg.impots.deductionEnfant3, cfg.impots.deductionEnfant4
+                ];
+            }
+            if (cfg.impots.deductionChefFamille !== undefined) {
+                const optChef = document.querySelector('#situationMaritale option[value="300.000"]');
+                if (optChef) optChef.value = cfg.impots.deductionChefFamille.toFixed(3);
+            }
+        }
+
+        if (cfg.parametres) {
+            if (cfg.parametres.nombreSemaines !== undefined) NB_SEMAINES = cfg.parametres.nombreSemaines;
+            if (cfg.parametres.nomEntreprise) {
+                document.querySelectorAll('.hero-brand').forEach(el => el.textContent = cfg.parametres.nomEntreprise);
+            }
+            if (cfg.parametres.couleurPrincipale) document.documentElement.style.setProperty('--violet', cfg.parametres.couleurPrincipale);
+            if (cfg.parametres.couleurSecondaire) document.documentElement.style.setProperty('--violet-2', cfg.parametres.couleurSecondaire);
+        }
+    }
+
+    loadAdminConfig();
+
+
+    /* ===== 3. GÉNÉRATION DYNAMIQUE — assiduité par semaine =====
+       Crée les 4 cases à cocher "Semaine 1" à "Semaine 4" au lieu de les
+       écrire en dur dans le HTML. Cochée = assidu cette semaine (+55 TND).
+       Décochée = non assidu, la tranche de cette semaine est perdue. */
+    function renderWeekInputs() {
+        const previousValues = Array.from(weeksContainer.querySelectorAll('input')).map(i => i.checked);
+        weeksContainer.innerHTML = '';
+
+        for (let i = 0; i < NB_SEMAINES; i++) {
+            const wasChecked = previousValues[i] !== undefined ? previousValues[i] : true;
+            const row = document.createElement('div');
+            row.className = 'toggle-row';
+            row.innerHTML = `
+                <span style="font-size:13px; color:var(--text-soft);">Semaine ${i + 1} — assidu(e)</span>
+                <label class="switch">
+                    <input type="checkbox" class="week-abs-input" data-week="${i}" ${wasChecked ? 'checked' : ''}>
+                    <span class="switch-track"><span class="switch-thumb"></span></span>
+                </label>
+            `;
+            weeksContainer.appendChild(row);
+        }
+
+        weeksContainer.querySelectorAll('.week-abs-input').forEach(inp => {
+            inp.addEventListener('input', calculateSalary);
+            inp.addEventListener('change', calculateSalary);
+        });
+    }
+
+
+    /* ===== 4. MOTEUR FISCAL — barème IRPP par tranches progressives
+       (législation tunisienne : 0% jusqu'à 5000 DT/an, puis 15%, 25%, 30%,
+       33%, 36%, 38%, et 40% au-delà de 70 000 DT/an) ===== */
+    function calculerIrppAnnuel(revenuNetImposable) {
+        // Utilise le barème de la config admin si présent, sinon le barème par défaut.
+        const tranches = IRPP_TRANCHES || [
+            { limite: 5000, taux: 0.00 },
+            { limite: 10000, taux: 0.15 },
+            { limite: 20000, taux: 0.25 },
+            { limite: 30000, taux: 0.30 },
+            { limite: 40000, taux: 0.33 },
+            { limite: 50000, taux: 0.36 },
+            { limite: 70000, taux: 0.38 },
+            { limite: Infinity, taux: 0.40 }
+        ];
+
+        let impot = 0;
+        let revenuRestant = revenuNetImposable;
+        let limitePrecedente = 0;
+
+        for (const tranche of tranches) {
+            const largeurTranche = tranche.limite - limitePrecedente;
+            if (revenuRestant > largeurTranche) {
+                impot += largeurTranche * tranche.taux;
+                revenuRestant -= largeurTranche;
+                limitePrecedente = tranche.limite;
+            } else {
+                impot += revenuRestant * tranche.taux;
+                break;
+            }
+        }
+        return impot;
+    }
+
+
+    /* ===== 5. FONCTIONS DE CALCUL =====
+       Chaque fonction fait un seul travail et retourne un objet simple.
+       calculateSalary() (section 6) les enchaîne dans l'ordre. */
+
+    // 5.1 — Lit tous les champs de saisie et renvoie leurs valeurs numériques
+    function lireLesSaisies() {
+        const weekAbsInputs = Array.from(weeksContainer.querySelectorAll('.week-abs-input'));
+        const weekAssiduiteValues = weekAbsInputs.map(inp => inp.checked); // true = assidu cette semaine
+
+        return {
+            baseSalary: parseFloat(inBaseSalary.value) || 0,
+            hrsNuit: parseFloat(inHeuresNuit.value) || 0,
+            nbrDim: parseFloat(inDimanches.value) || 0,
+            jFeries: parseFloat(inJoursFeries.value) || 0,
+            hSup125: parseFloat(inHSup125.value) || 0,
+            hSup150: parseFloat(inHSup150.value) || 0,
+            hrsWfm: parseFloat(inWfm.value) || 0,
+            pctProd: parseFloat(inProductivite.value) || 0,
+            valRappels: parseFloat(inRappels.value) || 0,
+            valAvances: parseFloat(inAvances.value) || 0,
+            valPertes: parseFloat(inPertes.value) || 0,
+            deductionChefFamille: parseFloat(inSituationMaritale.value) || 0,
+            nbrEnfants: Math.min(parseInt(inEnfantsACharge.value) || 0, MAX_ENFANTS_DEDUCTIBLES),
+            langueEligible: inLangueEligible.checked,
+            jAbs: parseFloat(inJoursAbsenceTotal.value) || 0,
+            weekAssiduiteValues: weekAssiduiteValues,
+            nbSemainesAvecAbsence: weekAssiduiteValues.filter(assidu => !assidu).length,
+            nbSemainesTotal: weekAssiduiteValues.length
+        };
+    }
+
+    // 5.2 — Taux horaire/journalier, proportionnels au salaire de base saisi
+    function calculerTauxProportionnels(baseSalary) {
+        const ratio = baseSalary / SALAIRE_BASE_REFERENCE;
+        return {
+            tauxHoraireBase: TAUX_HORAIRE_REF * ratio,
+            tauxMajorationNuit: TAUX_HORAIRE_REF * MAJORATION_NUIT_PCT * ratio,
+            tauxJournalierBase: TAUX_JOURNALIER_REF * ratio
+        };
+    }
+
+    // 5.3 — Avantage en nature TR : taux/jour sur la base de N jours travaillés
+    // (désactivable entièrement depuis la config admin)
+    function calculerAvantageTR(jAbs) {
+        if (!TICKETS_ACTIFS) return 0;
+        return Math.max(0, JOURS_TR_BASE - jAbs) * VALEUR_JOURNALIERE_TR;
+    }
+
+    // 5.4 — Prime d'assiduité : total réparti en tranches hebdomadaires.
+    // Une semaine avec ≥1 jour d'absence fait perdre sa tranche.
+    function calculerPrimeAssiduite(nbSemainesTotal, nbSemainesAvecAbsence) {
+        const trancheAssiduite = PRIME_ASSIDUITE_TOTAL / NB_SEMAINES;
+        return {
+            trancheAssiduite: trancheAssiduite,
+            currentAssiduitePrime: (nbSemainesTotal - nbSemainesAvecAbsence) * trancheAssiduite
+        };
+    }
+
+    // 5.5 — Gains variables du mois (heures de nuit, dimanches, fériés, heures sup)
+    function calculerGainsVariables(saisies, taux) {
+        return {
+            gainNuit: saisies.hrsNuit * taux.tauxMajorationNuit,
+            gainDim: saisies.nbrDim * PRIME_DIMANCHE,
+            gainFerie: saisies.jFeries * taux.tauxJournalierBase * MAJORATION_FERIE_PCT,
+            gainSup125: saisies.hSup125 * taux.tauxHoraireBase * MAJORATION_SUP125_PCT,
+            gainSup150: saisies.hSup150 * taux.tauxHoraireBase * MAJORATION_SUP150_PCT
+        };
+    }
+
+    // 5.6 — Retenues variables sur le brut (absences en jours, WFM en heures)
+    function calculerRetenuesVariables(saisies, taux) {
+        return {
+            retenueAbs: saisies.jAbs * taux.tauxJournalierBase,
+            retenueWfm: saisies.hrsWfm * taux.tauxHoraireBase
+        };
+    }
+
+    // 5.7 — Assurance groupe (taux du Brut hors assurance) puis Brut total.
+    // Calcul en 2 temps car l'assurance dépend elle-même du brut.
+    // Désactivable entièrement depuis la config admin.
+    function calculerAssuranceEtBrut(saisies, taux, primeAssiduite, gains, retenues, avTr, valProd, valLangue) {
+        const baseAssurance = (
+            saisies.baseSalary +
+            PRESENCE_INDEMNITY +
+            TRANSPORT_INDEMNITY +
+            primeAssiduite.currentAssiduitePrime +
+            valLangue +
+            valProd +
+            gains.gainNuit +
+            gains.gainDim +
+            gains.gainFerie +
+            gains.gainSup125 +
+            gains.gainSup150 +
+            saisies.valRappels +
+            avTr -
+            retenues.retenueAbs -
+            retenues.retenueWfm
+        );
+        const av_ass = ASSURANCE_ACTIVE ? baseAssurance * TAUX_ASSURANCE : 0;
+
+        return {
+            baseAssurance: baseAssurance,
+            av_ass: av_ass,
+            totalBrut: baseAssurance + av_ass
+        };
+    }
+
+    // 5.8 — Cotisation salariale CNSS, hors avantages en nature.
+    // Désactivable entièrement depuis la config admin.
+    function calculerCnss(totalBrut, avTr, av_ass) {
+        const baseCnss = totalBrut - avTr - av_ass;
+        return {
+            baseCnss: baseCnss,
+            cnss: CNSS_ACTIVE ? baseCnss * TAUX_CNSS : 0
+        };
+    }
+
+    // 5.9 — IRPP (barème annuel ramené au mois) et CSS.
+    // CSS désactivable ; déductions enfants par rang si fournies par la config admin.
+    function calculerImpots(salaireImposable, saisies) {
+        const salaireImposableAnnuel = salaireImposable * 12;
+        const fraisProfessionnels = Math.min(salaireImposableAnnuel * TAUX_FRAIS_PRO, PLAFOND_FRAIS_PRO);
+
+        let deductionEnfants;
+        if (DEDUCTIONS_ENFANTS) {
+            deductionEnfants = 0;
+            for (let i = 0; i < saisies.nbrEnfants; i++) {
+                deductionEnfants += DEDUCTIONS_ENFANTS[i] !== undefined ? DEDUCTIONS_ENFANTS[i] : DEDUCTIONS_ENFANTS[DEDUCTIONS_ENFANTS.length - 1];
+            }
+        } else {
+            deductionEnfants = saisies.nbrEnfants * DEDUCTION_PAR_ENFANT;
+        }
+
+        const abattementsFamille = saisies.deductionChefFamille + deductionEnfants;
+        const revenuNetImposableAnnuel = Math.max(0, salaireImposableAnnuel - fraisProfessionnels - abattementsFamille);
+
+        return {
+            salaireImposableAnnuel: salaireImposableAnnuel,
+            revenuNetImposableAnnuel: revenuNetImposableAnnuel,
+            irpp: calculerIrppAnnuel(revenuNetImposableAnnuel) / 12,
+            css: CSS_ACTIVE ? (revenuNetImposableAnnuel * TAUX_CSS) / 12 : 0
+        };
+    }
+
+    // 5.10 — Salaire net puis Net à payer (les avantages en nature sont
+    // retirés en fin de chaîne : ce ne sont pas des sommes versées en cash)
+    function calculerNet(totalBrut, cnss, irpp, css, av_ass, avTr, saisies) {
+        const salaireNet = totalBrut - cnss - irpp - css;
+        const netAPayer = salaireNet - av_ass - saisies.valAvances - saisies.valPertes - avTr;
+        return { salaireNet, netAPayer };
+    }
+
+
+    /* ===== 6. ORCHESTRATION =====
+       Enchaîne toutes les fonctions de calcul dans l'ordre, puis
+       transmet le résultat final à la fonction d'affichage (section 7). */
+    function calculateSalary() {
+        const saisies = lireLesSaisies();
+        const taux = calculerTauxProportionnels(saisies.baseSalary);
+
+        const avTr = calculerAvantageTR(saisies.jAbs);
+        const valProd = saisies.baseSalary * saisies.pctProd;
+        const valLangue = saisies.langueEligible ? LANGUE_PRIME : 0;
+        const primeAssiduite = calculerPrimeAssiduite(saisies.nbSemainesTotal, saisies.nbSemainesAvecAbsence);
+
+        const gains = calculerGainsVariables(saisies, taux);
+        const retenues = calculerRetenuesVariables(saisies, taux);
+
+        const { av_ass, totalBrut } = calculerAssuranceEtBrut(saisies, taux, primeAssiduite, gains, retenues, avTr, valProd, valLangue);
+        const { baseCnss, cnss } = calculerCnss(totalBrut, avTr, av_ass);
+
+        const salaireImposable = totalBrut - cnss;
+        const { irpp, css } = calculerImpots(salaireImposable, saisies);
+
+        const { salaireNet, netAPayer } = calculerNet(totalBrut, cnss, irpp, css, av_ass, avTr, saisies);
+
+        afficherResultats({
+            saisies, taux, avTr, valProd, valLangue, primeAssiduite, gains, retenues,
+            av_ass, totalBrut, baseCnss, cnss, salaireImposable, irpp, css,
+            salaireNet, netAPayer
+        });
+    }
+
+
+    /* ===== 7. AFFICHAGE — pousse chaque résultat calculé vers le DOM ===== */
+    function afficherResultats(r) {
+        const set = (id, value) => { document.getElementById(id).innerText = value.toFixed(3); };
+
+        set('outAssuranceConst', r.av_ass);
+        set('outSalaireBase', r.saisies.baseSalary);
+        set('outAssiduite', r.primeAssiduite.currentAssiduitePrime);
+        set('outAssiduiteConst', r.primeAssiduite.currentAssiduitePrime);
+        document.getElementById('hintTranche').innerText =
+            `Une tranche d'assiduité de ${r.primeAssiduite.trancheAssiduite.toFixed(3)} TND est perdue pour chaque semaine décochée (non assidue).`;
+
+        set('outProductivite', r.valProd);
+        set('outLangue', r.valLangue);
+
+        set('outBaseNuit', r.saisies.hrsNuit);
+        set('outGainNuit', r.gains.gainNuit);
+        set('outBaseDim', r.saisies.nbrDim);
+        set('outGainDim', r.gains.gainDim);
+        set('outBaseFerie', r.saisies.jFeries);
+        set('outGainFerie', r.gains.gainFerie);
+        set('outBaseSup125', r.saisies.hSup125);
+        set('outGainSup125', r.gains.gainSup125);
+        set('outBaseSup150', r.saisies.hSup150);
+        set('outGainSup150', r.gains.gainSup150);
+
+        set('outRetenueAbs', r.retenues.retenueAbs);
+        set('outRappels', r.saisies.valRappels);
+        set('outBaseWfm', r.saisies.hrsWfm);
+        set('outRetenueWFM', r.retenues.retenueWfm);
+
+        set('outTotalBrut', r.totalBrut);
+        set('outBaseCnss', r.baseCnss);
+        set('outCnss', r.cnss);
+
+        set('outBaseIrpp', r.salaireImposable);
+        set('outIrpp', r.irpp);
+        set('outCss', r.css);
+
+        set('outGainAssurance', r.av_ass);
+        set('outSalaireNet', r.salaireNet);
+        set('outRetenueAvance', r.saisies.valAvances);
+        set('outRetenuePertes', r.saisies.valPertes);
+        set('outRetenueAssurance', r.av_ass);
+        set('outAvTrGain', r.avTr);
+        set('outAvTrRetenue', r.avTr);
+        set('outAvTrConst', r.avTr);
+        set('outNetAPayer', r.netAPayer);
+
+        // Miroirs pour les deux cartes "hero" (haut de page mobile + bas de page bureau)
+        set('outNetAPayerHero', r.netAPayer);
+        set('outTotalBrutHero', r.totalBrut);
+        set('outRetenuesHero', r.totalBrut - r.netAPayer);
+        set('outNetAPayerHero2', r.netAPayer);
+        set('outTotalBrutHero2', r.totalBrut);
+        set('outRetenuesHero2', r.totalBrut - r.netAPayer);
+    }
+
+
+    /* ===== 8. ÉVÉNEMENTS — recalcul en temps réel ===== */
+    const allInputs = [
+        inBaseSalary, inHeuresNuit, inDimanches, inJoursFeries, inHSup125, inHSup150,
+        inWfm, inProductivite, inRappels, inAvances, inPertes,
+        inSituationMaritale, inEnfantsACharge, inLangueEligible, inJoursAbsenceTotal
+    ];
+
+    allInputs.forEach(input => {
+        input.addEventListener('input', calculateSalary);
+        input.addEventListener('change', calculateSalary);
+    });
+
+
+    /* ===== 9. UI — boutons +/- (steppers) =====
+       Injecte automatiquement 2 boutons (▲▼) après chaque champ numérique,
+       en respectant son step / min / max, sans dupliquer le HTML à la main. */
+    function attachSteppers(root) {
+        (root || document).querySelectorAll('.field-control input[type="number"]').forEach(inp => {
+            if (inp.dataset.stepperAttached) return;
+            inp.dataset.stepperAttached = "1";
+
+            const stepper = document.createElement('div');
+            stepper.className = 'stepper';
+
+            const up = document.createElement('button');
+            up.type = 'button';
+            up.className = 'stepper-btn up';
+            up.setAttribute('aria-label', 'Augmenter');
+            up.innerHTML = '<svg viewBox="0 0 20 20" fill="none"><path d="M5 12l5-5 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+            const down = document.createElement('button');
+            down.type = 'button';
+            down.className = 'stepper-btn down';
+            down.setAttribute('aria-label', 'Diminuer');
+            down.innerHTML = '<svg viewBox="0 0 20 20" fill="none"><path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+            function bump(dir) {
+                const step = parseFloat(inp.step) || 1;
+                const decimals = (inp.step && inp.step.includes('.')) ? inp.step.split('.')[1].length : 0;
+                let val = (parseFloat(inp.value) || 0) + (dir * step);
+                if (inp.min !== "" && val < parseFloat(inp.min)) val = parseFloat(inp.min);
+                if (inp.max !== "" && val > parseFloat(inp.max)) val = parseFloat(inp.max);
+                inp.value = val.toFixed(decimals);
+                inp.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+
+            up.addEventListener('click', () => bump(1));
+            down.addEventListener('click', () => bump(-1));
+
+            stepper.appendChild(up);
+            stepper.appendChild(down);
+            inp.insertAdjacentElement('afterend', stepper);
+        });
+    }
+
+
+    /* ===== 9bis. UI — navigation par onglets (Saisie / Bulletin) ===== */
+    function initNavigation() {
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const screens = {
+            'screen-saisie': document.getElementById('screen-saisie'),
+            'screen-bulletin': document.getElementById('screen-bulletin')
+        };
+
+        tabButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const target = btn.getAttribute('data-target');
+                tabButtons.forEach(b => b.classList.toggle('active', b === btn));
+
+                Object.keys(screens).forEach(key => {
+                    const el = screens[key];
+                    if (key === target) {
+                        el.hidden = false;
+                        el.classList.remove('enter');
+                        void el.offsetWidth; // relance l'animation d'entrée
+                        el.classList.add('enter');
+                    } else {
+                        el.hidden = true;
+                    }
+                });
+
+                window.scrollTo(0, 0);
+            });
+        });
+    }
+
+
+    /* ===== 10. INITIALISATION ===== */
+    renderWeekInputs();
+    calculateSalary();
+    attachSteppers();
+    initNavigation();
+</script>
+</body>
+</html>
