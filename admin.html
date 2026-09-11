@@ -553,17 +553,8 @@ input, select { font-family: inherit; }
         </div>
 
         <nav id="navList">
-            <button class="nav-item" data-section="dashboard"><span class="icon">🏠</span>Tableau de bord</button>
-            <button class="nav-item" data-section="salaires"><span class="icon">💰</span>Salaires</button>
-            <button class="nav-item" data-section="primes"><span class="icon">📈</span>Primes</button>
-            <button class="nav-item" data-section="heures"><span class="icon">🕒</span>Heures</button>
-            <button class="nav-item" data-section="cotisations"><span class="icon">🏦</span>Cotisations</button>
-            <button class="nav-item" data-section="impots"><span class="icon">📄</span>Impôts</button>
-            <button class="nav-item" data-section="tickets"><span class="icon">🎫</span>Tickets Restaurant</button>
+            <button class="nav-item" data-section="constantes"><span class="icon">🧩</span>Constantes</button>
             <button class="nav-item" data-section="parametres"><span class="icon">⚙</span>Paramètres</button>
-            <button class="nav-item" data-section="securite"><span class="icon">🔒</span>Sécurité</button>
-            <div class="nav-divider"></div>
-            <button class="nav-item" data-section="sauvegarde"><span class="icon">💾</span>Sauvegarde</button>
             <button class="nav-item" data-section="export"><span class="icon">📤</span>Export</button>
             <button class="nav-item" data-section="import"><span class="icon">📥</span>Import</button>
         </nav>
@@ -584,90 +575,38 @@ input, select { font-family: inherit; }
             </div>
         </div>
 
-        <!-- ===== DASHBOARD ===== -->
-        <section class="section active" id="sec-dashboard">
-            <div class="stat-grid">
-                <div class="glass stat-card">
-                    <div class="label">Nombre total de paramètres</div>
-                    <div class="value" id="statParamCount">0</div>
-                </div>
-                <div class="glass stat-card">
-                    <div class="label">Dernière modification</div>
-                    <div class="value" id="statLastModified" style="font-size:15px;">—</div>
-                </div>
-                <div class="glass stat-card">
-                    <div class="label">Version</div>
-                    <div class="value" id="statVersion" style="font-size:18px;">—</div>
-                </div>
-                <div class="glass stat-card">
-                    <div class="label">État</div>
-                    <div class="value" id="statEtat">—</div>
-                </div>
-                <div class="glass stat-card">
-                    <div class="label">Dernière sauvegarde</div>
-                    <div class="value" id="statLastSave" style="font-size:15px;">—</div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ===== SALAIRES ===== -->
-        <section class="section" id="sec-salaires">
+        <!-- ===== CONSTANTES (regroupe Salaires, Primes, Heures, Tickets, Cotisations, Impôts, Famille) ===== -->
+        <section class="section active" id="sec-constantes">
             <div class="glass field-card">
                 <h3>Salaires</h3>
                 <p class="sub">Salaire de base et indemnités fixes.</p>
                 <div class="field-grid" id="grid-salaires"></div>
-                <div class="action-row">
-                    <button class="btn violet" data-save="salaires">Sauvegarder</button>
-                    <button class="btn" data-cancel="salaires">Annuler</button>
-                    <button class="btn danger" data-reset="salaires">Réinitialiser</button>
-                </div>
             </div>
-        </section>
 
-        <!-- ===== PRIMES ===== -->
-        <section class="section" id="sec-primes">
             <div class="glass field-card">
                 <h3>Primes</h3>
                 <p class="sub">Primes variables et exceptionnelles.</p>
                 <div class="field-grid" id="grid-primes"></div>
-                <div class="action-row">
-                    <button class="btn violet" data-save="primes">Sauvegarder</button>
-                    <button class="btn" data-cancel="primes">Annuler</button>
-                    <button class="btn danger" data-reset="primes">Réinitialiser</button>
-                </div>
             </div>
-        </section>
 
-        <!-- ===== HEURES ===== -->
-        <section class="section" id="sec-heures">
             <div class="glass field-card">
                 <h3>Heures</h3>
                 <p class="sub">Taux horaires et majorations.</p>
                 <div class="field-grid" id="grid-heures"></div>
-                <div class="action-row">
-                    <button class="btn violet" data-save="heures">Sauvegarder</button>
-                    <button class="btn" data-cancel="heures">Annuler</button>
-                    <button class="btn danger" data-reset="heures">Réinitialiser</button>
-                </div>
             </div>
-        </section>
 
-        <!-- ===== COTISATIONS ===== -->
-        <section class="section" id="sec-cotisations">
+            <div class="glass field-card">
+                <h3>Tickets Restaurant</h3>
+                <p class="sub">Avantage en nature TR.</p>
+                <div class="field-grid" id="grid-tickets"></div>
+            </div>
+
             <div class="glass field-card">
                 <h3>Cotisations</h3>
                 <p class="sub">Assurance Groupe, CNSS et CSS.</p>
                 <div class="field-grid" id="grid-cotisations"></div>
-                <div class="action-row">
-                    <button class="btn violet" data-save="cotisations">Sauvegarder</button>
-                    <button class="btn" data-cancel="cotisations">Annuler</button>
-                    <button class="btn danger" data-reset="cotisations">Réinitialiser</button>
-                </div>
             </div>
-        </section>
 
-        <!-- ===== IMPÔTS ===== -->
-        <section class="section" id="sec-impots">
             <div class="glass field-card">
                 <h3>Barème IRPP</h3>
                 <p class="sub">Tranches d'imposition annuelles progressives.</p>
@@ -685,64 +624,30 @@ input, select { font-family: inherit; }
             </div>
 
             <div class="action-row">
-                <button class="btn violet" data-save="impots">Sauvegarder</button>
-                <button class="btn" data-cancel="impots">Annuler</button>
-                <button class="btn danger" data-reset="impots">Réinitialiser</button>
+                <button class="btn violet" id="btnSaveConstantes">Sauvegarder</button>
+                <button class="btn" id="btnCancelConstantes">Annuler</button>
+                <button class="btn danger" id="btnResetConstantes">Réinitialiser</button>
             </div>
         </section>
 
-        <!-- ===== TICKETS RESTAURANT ===== -->
-        <section class="section" id="sec-tickets">
-            <div class="glass field-card">
-                <h3>Tickets Restaurant</h3>
-                <p class="sub">Avantage en nature TR.</p>
-                <div class="field-grid" id="grid-tickets"></div>
-                <div class="action-row">
-                    <button class="btn violet" data-save="tickets">Sauvegarder</button>
-                    <button class="btn" data-cancel="tickets">Annuler</button>
-                    <button class="btn danger" data-reset="tickets">Réinitialiser</button>
-                </div>
-            </div>
-        </section>
-
-        <!-- ===== PARAMÈTRES ===== -->
+        <!-- ===== PARAMÈTRES (regroupe Paramètres généraux + Sécurité) ===== -->
         <section class="section" id="sec-parametres">
             <div class="glass field-card">
                 <h3>Paramètres généraux</h3>
                 <p class="sub">Identité et affichage du simulateur.</p>
                 <div class="field-grid" id="grid-parametres"></div>
-                <div class="action-row">
-                    <button class="btn violet" data-save="parametres">Sauvegarder</button>
-                    <button class="btn" data-cancel="parametres">Annuler</button>
-                    <button class="btn danger" data-reset="parametres">Réinitialiser</button>
-                </div>
             </div>
-        </section>
 
-        <!-- ===== SÉCURITÉ ===== -->
-        <section class="section" id="sec-securite">
             <div class="glass field-card">
                 <h3>Sécurité</h3>
                 <p class="sub">Accès au panneau d'administration.</p>
                 <div class="field-grid" id="grid-securite"></div>
-                <div class="action-row">
-                    <button class="btn violet" data-save="securite">Sauvegarder</button>
-                    <button class="btn" data-cancel="securite">Annuler</button>
-                    <button class="btn danger" data-reset="securite">Réinitialiser</button>
-                </div>
             </div>
-        </section>
 
-        <!-- ===== SAUVEGARDE ===== -->
-        <section class="section" id="sec-sauvegarde">
-            <div class="glass field-card">
-                <h3>Sauvegarde générale</h3>
-                <p class="sub">Enregistre l'intégralité de la configuration dans ce navigateur.</p>
-                <div class="action-row">
-                    <button class="btn violet" id="btnSaveAll">Sauvegarder</button>
-                    <button class="btn" id="btnRestoreAll">Restaurer</button>
-                    <button class="btn danger" id="btnResetAll">Réinitialiser</button>
-                </div>
+            <div class="action-row">
+                <button class="btn violet" id="btnSaveParametres">Sauvegarder</button>
+                <button class="btn" id="btnCancelParametres">Annuler</button>
+                <button class="btn danger" id="btnResetParametres">Réinitialiser</button>
             </div>
         </section>
 
@@ -787,10 +692,9 @@ input, select { font-family: inherit; }
      5. MODULE AUTHENTIFICATION (login, session, expiration)
      6. MODULE FORMULAIRES GÉNÉRIQUES
      7. MODULE IRPP (tranches dynamiques)
-     8. MODULE DASHBOARD
-     9. MODULE NAVIGATION (sidebar, sections)
-     10. MODULE SAUVEGARDE / EXPORT / IMPORT
-     11. INITIALISATION
+     8. MODULE NAVIGATION (sidebar, sections)
+     9. MODULE SAUVEGARDE / EXPORT / IMPORT
+     10. INITIALISATION
    ============================================================================ */
 
 const STORAGE_KEY = 'salary_admin_config';
@@ -1186,65 +1090,13 @@ document.getElementById('btnAddTranche').addEventListener('click', () => {
     renderIrppTable();
 });
 
-/* ===== 8. MODULE DASHBOARD ===== */
-function countParams(obj) {
-    let count = 0;
-    Object.values(obj).forEach(v => {
-        if (Array.isArray(v)) count += v.length * 3; // 3 champs par tranche IRPP
-        else if (v && typeof v === 'object') count += countParams(v);
-        else count += 1;
-    });
-    return count;
-}
+/* ===== 8. MODULE NAVIGATION ===== */
+const CONST_KEYS = ['salaires', 'primes', 'heures', 'tickets', 'cotisations', 'impots'];
+const PARAM_KEYS = ['parametres', 'securite'];
 
-function validateConfigStructure(config) {
-    try {
-        const tranches = config.impots.tranches;
-        for (let i = 0; i < tranches.length; i++) {
-            const t = tranches[i];
-            if (t.max !== null && t.min >= t.max) return false;
-            if (t.pct < 0 || t.pct > 100) return false;
-        }
-        if (config.cotisations.cnssTaux < 0 || config.cotisations.cnssTaux > 100) return false;
-        if (config.cotisations.assuranceTaux < 0 || config.cotisations.assuranceTaux > 100) return false;
-        return true;
-    } catch (e) { return false; }
-}
-
-function formatDate(iso) {
-    if (!iso) return '—';
-    const d = new Date(iso);
-    return d.toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-}
-
-function renderDashboard() {
-    const cfg = App.working;
-    document.getElementById('statParamCount').textContent = countParams({
-        salaires: cfg.salaires, primes: cfg.primes, heures: cfg.heures, tickets: cfg.tickets,
-        cotisations: cfg.cotisations, impots: cfg.impots, parametres: cfg.parametres, securite: cfg.securite
-    });
-    document.getElementById('statLastModified').textContent = formatDate(cfg.meta.lastModified);
-    document.getElementById('statVersion').textContent = cfg.parametres.version || '—';
-    document.getElementById('statLastSave').textContent = formatDate(cfg.meta.lastSave);
-
-    const valid = validateConfigStructure(cfg);
-    const etatEl = document.getElementById('statEtat');
-    etatEl.textContent = valid ? 'Configuration valide' : 'Erreur détectée';
-    etatEl.className = 'value ' + (valid ? 'ok' : 'error');
-}
-
-/* ===== 9. MODULE NAVIGATION ===== */
 const SECTION_TITLES = {
-    dashboard: ['Tableau de bord', "Vue d'ensemble de la configuration"],
-    salaires: ['Salaires', 'Salaire de base et indemnités'],
-    primes: ['Primes', 'Primes variables et exceptionnelles'],
-    heures: ['Heures', 'Taux horaires et majorations'],
-    cotisations: ['Cotisations', 'Assurance, CNSS et CSS'],
-    impots: ['Impôts', 'Barème IRPP et déductions familiales'],
-    tickets: ['Tickets Restaurant', 'Avantage en nature TR'],
-    parametres: ['Paramètres', 'Identité du simulateur'],
-    securite: ['Sécurité', "Accès à l'administration"],
-    sauvegarde: ['Sauvegarde', 'Enregistrement local de la configuration'],
+    constantes: ['Constantes', 'Salaires, primes, heures, tickets, cotisations et impôts'],
+    parametres: ['Paramètres', "Identité du simulateur et accès à l'administration"],
     export: ['Export', 'Télécharger la configuration'],
     import: ['Import', 'Charger une configuration']
 };
@@ -1256,15 +1108,19 @@ function goToSection(key) {
     document.getElementById('topbarTitle').textContent = SECTION_TITLES[key][0];
     document.getElementById('topbarSub').textContent = SECTION_TITLES[key][1];
 
-    if (key === 'dashboard') renderDashboard();
-    if (key === 'salaires') renderSectionForm('salaires', 'grid-salaires');
-    if (key === 'primes') renderSectionForm('primes', 'grid-primes');
-    if (key === 'heures') renderSectionForm('heures', 'grid-heures');
-    if (key === 'cotisations') renderSectionForm('cotisations', 'grid-cotisations');
-    if (key === 'impots') { renderIrppTable(); renderSectionForm('famille', 'grid-famille', 'impots'); }
-    if (key === 'tickets') renderSectionForm('tickets', 'grid-tickets');
-    if (key === 'parametres') renderSectionForm('parametres', 'grid-parametres');
-    if (key === 'securite') renderSectionForm('securite', 'grid-securite');
+    if (key === 'constantes') {
+        renderSectionForm('salaires', 'grid-salaires');
+        renderSectionForm('primes', 'grid-primes');
+        renderSectionForm('heures', 'grid-heures');
+        renderSectionForm('tickets', 'grid-tickets');
+        renderSectionForm('cotisations', 'grid-cotisations');
+        renderIrppTable();
+        renderSectionForm('famille', 'grid-famille', 'impots');
+    }
+    if (key === 'parametres') {
+        renderSectionForm('parametres', 'grid-parametres');
+        renderSectionForm('securite', 'grid-securite');
+    }
 
     // Ferme la sidebar sur mobile après un choix
     document.getElementById('sidebar').classList.remove('open');
@@ -1284,53 +1140,34 @@ document.getElementById('sidebarBackdrop').addEventListener('click', () => {
     document.getElementById('sidebarBackdrop').classList.remove('visible');
 });
 
-/* ===== 10. MODULE SAUVEGARDE / EXPORT / IMPORT ===== */
-function saveSection(sectionKey) {
-    App.config = JSON.parse(JSON.stringify(App.working));
+/* ===== 9. MODULE SAUVEGARDE / EXPORT / IMPORT ===== */
+function saveKeys(keys, sectionToRefresh) {
+    keys.forEach(k => { App.config[k] = JSON.parse(JSON.stringify(App.working[k])); });
     Store.save(App.config);
+    goToSection(sectionToRefresh);
     Toast.show('Configuration sauvegardée.', 'success');
-    if (document.getElementById('sec-dashboard').classList.contains('active')) renderDashboard();
 }
 
-function cancelSection(sectionKey) {
-    App.working = JSON.parse(JSON.stringify(App.config));
-    goToSection(sectionKey);
+function cancelKeys(keys, sectionToRefresh) {
+    keys.forEach(k => { App.working[k] = JSON.parse(JSON.stringify(App.config[k])); });
+    goToSection(sectionToRefresh);
     Toast.show('Modifications annulées.', 'success');
 }
 
-function resetSection(sectionKey) {
-    const defaultSlice = JSON.parse(JSON.stringify(DEFAULT_CONFIG[sectionKey]));
-    App.working[sectionKey] = defaultSlice;
-    goToSection(sectionKey);
+function resetKeys(keys, sectionToRefresh) {
+    if (!confirm('Réinitialiser ces réglages aux valeurs par défaut ?')) return;
+    keys.forEach(k => { App.working[k] = JSON.parse(JSON.stringify(DEFAULT_CONFIG[k])); });
+    goToSection(sectionToRefresh);
     Toast.show('Valeurs par défaut chargées — Sauvegarder pour confirmer.', 'success');
 }
 
-document.querySelectorAll('[data-save]').forEach(btn => btn.addEventListener('click', () => saveSection(btn.dataset.save)));
-document.querySelectorAll('[data-cancel]').forEach(btn => btn.addEventListener('click', () => cancelSection(btn.dataset.cancel)));
-document.querySelectorAll('[data-reset]').forEach(btn => btn.addEventListener('click', () => {
-    if (confirm('Réinitialiser cette section aux valeurs par défaut ?')) resetSection(btn.dataset.reset);
-}));
+document.getElementById('btnSaveConstantes').addEventListener('click', () => saveKeys(CONST_KEYS, 'constantes'));
+document.getElementById('btnCancelConstantes').addEventListener('click', () => cancelKeys(CONST_KEYS, 'constantes'));
+document.getElementById('btnResetConstantes').addEventListener('click', () => resetKeys(CONST_KEYS, 'constantes'));
 
-document.getElementById('btnSaveAll').addEventListener('click', () => {
-    App.config = JSON.parse(JSON.stringify(App.working));
-    Store.save(App.config);
-    Toast.show('Configuration entièrement sauvegardée.', 'success');
-    renderDashboard();
-});
-
-document.getElementById('btnRestoreAll').addEventListener('click', () => {
-    App.config = Store.load();
-    App.working = JSON.parse(JSON.stringify(App.config));
-    goToSection('dashboard');
-    Toast.show('Dernière sauvegarde restaurée.', 'success');
-});
-
-document.getElementById('btnResetAll').addEventListener('click', () => {
-    if (!confirm('Réinitialiser TOUTE la configuration aux valeurs par défaut ?')) return;
-    App.working = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
-    goToSection('dashboard');
-    Toast.show('Toute la configuration a été réinitialisée — Sauvegarder pour confirmer.', 'success');
-});
+document.getElementById('btnSaveParametres').addEventListener('click', () => saveKeys(PARAM_KEYS, 'parametres'));
+document.getElementById('btnCancelParametres').addEventListener('click', () => cancelKeys(PARAM_KEYS, 'parametres'));
+document.getElementById('btnResetParametres').addEventListener('click', () => resetKeys(PARAM_KEYS, 'parametres'));
 
 document.getElementById('btnExport').addEventListener('click', () => {
     if (!App.config.securite.autoriserExport) {
@@ -1359,7 +1196,7 @@ function handleImportFile(file) {
             App.working = Store.mergeWithDefaults(parsed);
             App.config = JSON.parse(JSON.stringify(App.working));
             Store.save(App.config);
-            goToSection('dashboard');
+            goToSection('constantes');
             Toast.show('Import réussi.', 'success');
         } catch (e) {
             Toast.show('Fichier JSON invalide.', 'error');
@@ -1380,7 +1217,7 @@ dropzone.addEventListener('drop', (e) => {
     if (file) handleImportFile(file);
 });
 
-/* ===== 11. INITIALISATION ===== */
+/* ===== 10. INITIALISATION ===== */
 const App = {
     config: null,
     working: null
@@ -1408,7 +1245,7 @@ function boot() {
     if (Auth.isLoggedIn()) {
         document.getElementById('loginScreen').classList.add('hidden');
         document.getElementById('appShell').classList.add('visible');
-        goToSection('dashboard');
+        goToSection('constantes');
         Auth.startInactivityWatch();
     }
 }
@@ -1421,7 +1258,7 @@ document.getElementById('loginForm').addEventListener('submit', (e) => {
         errorEl.textContent = '';
         document.getElementById('loginScreen').classList.add('hidden');
         document.getElementById('appShell').classList.add('visible');
-        goToSection('dashboard');
+        goToSection('constantes');
         Auth.startInactivityWatch();
         Toast.show('Connexion réussie.', 'success');
     } else {

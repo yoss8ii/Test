@@ -566,6 +566,7 @@
         font-weight: 700;
         font-family: inherit;
         border-radius: 13px;
+        text-decoration: none;
         transition: background 0.18s ease, color 0.18s ease;
     }
 
@@ -941,6 +942,10 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l3 3v15H6z"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>
             <span>Bulletin</span>
         </button>
+        <a class="tab-btn" href="admin.html">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            <span>Admin</span>
+        </a>
     </nav>
 
 </div>
@@ -1473,7 +1478,7 @@
 
     /* ===== 9bis. UI — navigation par onglets (Saisie / Bulletin) ===== */
     function initNavigation() {
-        const tabButtons = document.querySelectorAll('.tab-btn');
+        const tabButtons = document.querySelectorAll('.tab-btn[data-target]');
         const screens = {
             'screen-saisie': document.getElementById('screen-saisie'),
             'screen-bulletin': document.getElementById('screen-bulletin')
